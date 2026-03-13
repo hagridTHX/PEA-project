@@ -1,0 +1,3 @@
+C:/Users/Lookasz/CLionProjects/PEA-project_1/cmake-build-debug/CMakeFiles/PEA_project_1.dir
+C:/Users/Lookasz/CLionProjects/PEA-project_1/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Lookasz/CLionProjects/PEA-project_1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
