@@ -1,0 +1,22 @@
+# Ustawienia środowiska CLion / JetBrains
+.idea/
+*.iml
+
+# Pliki i foldery budowania (CMake)
+cmake-build-*/
+build/
+out/
+
+# Skompilowane pliki binarne i obiektowe
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# Różne pliki tymczasowe
+*.log
+.DS_Store
