@@ -1,0 +1,16 @@
+# --- Konfiguracja algorytmow TSP ---
+algorithm = BF           # Dostepne: NN, RAND, RNN, BF
+repetitions = 2         # Liczba powtorzen dla usrednienia czasu
+randIterations = 1000    # Ile sciezek ma sprawdzic algorytm RAND
+
+# --- Dane wejsciowe / wyjsciowe ---
+generateRandom = 1       # 0 = plik, 1 = generator
+symmetric = 1           # 0 = asymetryczny, 1 = symetryczny
+inputFile = data/matrix_8x8.atsp
+outputFile = results/output.csv
+
+# --- Pomiary ---
+startInstanceSize = 14    # Poczatkowy rozmiar badanej instancji
+instancesCount = 1       # Ilosc badanych instancji (np. 5 oznacza badanie N=6, 7, 8, 9, 10)
+optimalValue = 150       # (Opcjonalnie) do analizy bledu w sprawozdaniu
+showProgress = 1
