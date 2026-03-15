@@ -1,6 +1,7 @@
 # Ustawienia środowiska CLion / JetBrains
 .idea/
 *.iml
+matrix database/
 
 # Pliki i foldery budowania (CMake)
 cmake-build-*/
