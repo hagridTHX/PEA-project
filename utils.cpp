@@ -31,12 +31,12 @@ Config loadConfig(const string& filename) {
         if (delimiterPos != string::npos) {
             string key = trim(line.substr(0, delimiterPos));
             string value = trim(line.substr(delimiterPos + 1));
+
             if (key == "algorithm") cfg.algorithm = value;
             else if (key == "repetitions") cfg.repetitions = stoi(value);
             else if (key == "randIterations") cfg.randIterations = stoi(value);
             else if (key == "startInstanceSize") cfg.startInstanceSize = stoi(value);
             else if (key == "instancesCount") cfg.instancesCount = stoi(value);
-            else if (key == "optimalValue") cfg.optimalValue = stoi(value);
             else if (key == "inputFile") cfg.inputFile = value;
             else if (key == "outputFile") cfg.outputFile = value;
             else if (key == "showProgress") cfg.showProgress = (value == "1" || value == "true");

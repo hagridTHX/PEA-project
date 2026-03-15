@@ -15,7 +15,6 @@ struct Config {
     std::string outputFile = "results.csv";
     int startInstanceSize = 6;
     int instancesCount = 1;
-    int optimalValue = 0;
     bool showProgress = true;
 };
 
