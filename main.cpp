@@ -3,6 +3,7 @@
 #include <fstream>
 #include <chrono>
 #include <iomanip>
+#include <sstream>
 
 #include "algorithms.h"
 #include "utils.h"
@@ -17,7 +18,7 @@ int main() {
 
     bool isNewFile = false;
     ifstream testFile(cfg.outputFile);
-    if (!testFile.good() || testFile.peek() == ifstream::traits_type::eof()) {
+    if (!testFile.good()) {
         isNewFile = true;
     }
     testFile.close();
@@ -100,9 +101,9 @@ int main() {
             } else if (dynamicOptimum > 0) {
                 optStr = to_string(dynamicOptimum);
                 double error = static_cast<double>(cost - dynamicOptimum) / dynamicOptimum * 100.0;
-                char buf[32];
-                snprintf(buf, sizeof(buf), "%.2f", error);
-                errStr = buf;
+                ostringstream errorStream;
+                errorStream << fixed << setprecision(2) << error;
+                errStr = errorStream.str();
             }
 
             outFile << cfg.algorithm << ";"

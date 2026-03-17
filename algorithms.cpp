@@ -43,7 +43,9 @@ int randomSearch(const vector<vector<int>>& graph, int iterations) {
     if (n <= 1) return 0;
 
     vector<int> path(n);
-    iota(path.begin(), path.end(), 0);
+    for(int i = 0; i < n; i++) {
+        path[i] = i;
+    }
     int bestCost = numeric_limits<int>::max();
 
     random_device rd;
