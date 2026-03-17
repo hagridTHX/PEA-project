@@ -9,3 +9,7 @@ add_executable(PEA_project_1 main.cpp
         algorithms.h
         utils.cpp
         utils.h)
+
+if(WIN32)
+    target_link_libraries(PEA_project_1 psapi)
+endif()

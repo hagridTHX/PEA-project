@@ -6,7 +6,6 @@
 
 using namespace std;
 
-// --- 1. Metoda Najblizszego Sasiada (NN) ---
 int nearestNeighbour(const vector<vector<int>>& graph, int startNode) {
     int n = graph.size();
     vector<bool> visited(n, false);
@@ -39,7 +38,6 @@ int nearestNeighbour(const vector<vector<int>>& graph, int startNode) {
     return totalCost;
 }
 
-// --- 2. Algorytm Losowy (RAND) ---
 int randomSearch(const vector<vector<int>>& graph, int iterations) {
     int n = graph.size();
     if (n <= 1) return 0;
@@ -76,12 +74,10 @@ int randomSearch(const vector<vector<int>>& graph, int iterations) {
     return bestCost;
 }
 
-// --- Funkcja pomocnicza dla RNN (Rekurencyjne rozgalezianie) ---
 void rnnRecursive(const vector<vector<int>>& graph, vector<bool>& visited,
                   int currentNode, int startNode, int currentCost, int step, int& bestCost) {
     int n = graph.size();
 
-    // Warunek zakonczenia: odwiedzono wszystkie miasta
     if (step == n - 1) {
         if (graph[currentNode][startNode] != numeric_limits<int>::max()) {
             int total = currentCost + graph[currentNode][startNode];
@@ -91,7 +87,7 @@ void rnnRecursive(const vector<vector<int>>& graph, vector<bool>& visited,
     }
 
     int minCost = numeric_limits<int>::max();
-    vector<int> nextNodes; // Przechowuje wierzcholki o najmniejszym koszcie
+    vector<int> nextNodes;
 
     for (int i = 0; i < n; ++i) {
         if (!visited[i] && graph[currentNode][i] < numeric_limits<int>::max()) {
@@ -100,28 +96,24 @@ void rnnRecursive(const vector<vector<int>>& graph, vector<bool>& visited,
                 nextNodes.clear();
                 nextNodes.push_back(i);
             } else if (graph[currentNode][i] == minCost) {
-                // Znaleziono krawedz o takiej samej (minimalnej) wadze - dodajemy do rozgalezienia!
                 nextNodes.push_back(i);
             }
         }
     }
 
-    if (minCost == numeric_limits<int>::max()) return; // Slepa uliczka
+    if (minCost == numeric_limits<int>::max()) return;
 
-    // Sprawdzenie wszystkich sciezek o minimalnym koszcie
     for (int nextNode : nextNodes) {
         visited[nextNode] = true;
         rnnRecursive(graph, visited, nextNode, startNode, currentCost + minCost, step + 1, bestCost);
-        visited[nextNode] = false; // Backtracking: cofniecie odwiedzenia
+        visited[nextNode] = false;
     }
 }
 
-// --- 3. Repetitive Nearest Neighbour (RNN) ---
 int repetitiveNearestNeighbour(const vector<vector<int>>& graph) {
     int n = graph.size();
     int globalBestCost = numeric_limits<int>::max();
 
-    // Uruchomienie z kazdego wierzcholka poczatkowego
     for (int startNode = 0; startNode < n; ++startNode) {
         vector<bool> visited(n, false);
         visited[startNode] = true;
@@ -130,12 +122,10 @@ int repetitiveNearestNeighbour(const vector<vector<int>>& graph) {
     return globalBestCost;
 }
 
-// --- 4. Przeglad Zupelny (Brute Force) ---
 int bruteForceTSP(const vector<vector<int>>& graph) {
     int n = graph.size();
     if (n <= 1) return 0;
 
-    // Permutujemy tylko wierzcholki od 1 do n-1. Wierzcholek 0 jest zablokowany jako start/koniec.
     vector<int> path(n - 1);
     iota(path.begin(), path.end(), 1);
 
@@ -143,7 +133,7 @@ int bruteForceTSP(const vector<vector<int>>& graph) {
 
     do {
         int currentCost = 0;
-        int currentNode = 0; // Zawsze startujemy z wierzcholka 0
+        int currentNode = 0;
         bool valid = true;
 
         for (int nextNode : path) {
@@ -154,7 +144,6 @@ int bruteForceTSP(const vector<vector<int>>& graph) {
             currentNode = nextNode;
         }
 
-        // Dodanie kosztu powrotu do punktu startowego (0)
         if (valid && graph[currentNode][0] != numeric_limits<int>::max()) {
             currentCost += graph[currentNode][0];
             if (currentCost < minCost) {

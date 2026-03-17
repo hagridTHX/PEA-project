@@ -68,28 +68,72 @@ double calculateStdDev(const vector<double>& values, double mean) {
     return sqrt(sumSq / values.size());
 }
 
-double calculateMemoryKB(int n) {
-    size_t bytes = sizeof(vector<vector<int>>) + (n * sizeof(vector<int>)) + (n * n * sizeof(int));
-    return static_cast<double>(bytes) / 1024.0;
+
+double getProcessMemoryKB() {
+#ifdef _WIN32
+    // --- Wersja dla WINDOWS ---
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+        return static_cast<double>(pmc.WorkingSetSize) / 1024.0;
+    }
+    return 0.0;
+
+#elif defined(__linux__)
+    std::ifstream file("/proc/self/status");
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.substr(0, 6) == "VmRSS:") {
+            std::string value_str;
+            for (char c : line.substr(6)) {
+                if (isdigit(c)) value_str += c;
+            }
+            return std::stod(value_str);
+        }
+    }
+    return 0.0;
+
+#else
+    return 0.0;
+#endif
 }
 
-vector<vector<int>> loadGraphFromFile(const string& filename) {
+vector<vector<int>> loadGraphFromFile(const string& filename, int& knownOptimum) {
     ifstream file(filename);
     if (!file.is_open()) { cerr << "Blad: Brak pliku " << filename << endl; exit(1); }
-    int n; if (!(file >> n)) exit(1);
+
+    int n;
+    if (!(file >> n)) exit(1);
+
     vector<vector<int>> graph(n, vector<int>(n));
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
-            int weight; file >> weight;
+            int weight;
+            file >> weight;
             graph[i][j] = (weight == -1) ? numeric_limits<int>::max() : weight;
         }
     }
-    file.close(); return graph;
+
+    knownOptimum = 0;
+    string token;
+    while (file >> token) {
+        if (token.find("sum_min=") != string::npos) {
+            try {
+                knownOptimum = stoi(token.substr(8));
+            } catch (...) {
+            }
+            break;
+        }
+    }
+
+    file.close();
+    return graph;
 }
 
 vector<vector<int>> generateRandomGraph(int n, bool symmetric, int minWeight, int maxWeight) {
     vector<vector<int>> graph(n, vector<int>(n, 0));
-    random_device rd; mt19937 gen(rd()); uniform_int_distribution<> dist(minWeight, maxWeight);
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> dist(minWeight, maxWeight);
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
             if (i == j) graph[i][j] = numeric_limits<int>::max();

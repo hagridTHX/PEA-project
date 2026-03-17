@@ -13,50 +13,61 @@ using namespace std::chrono;
 int main() {
     Config cfg = loadConfig("config.txt");
 
-    // --- USTAWIENIA PROGRAMU ---
-    const int MAX_BF_SIZE = 14; // Zmienna sterująca bezpiecznikiem dla Brute Force
+    const int MAX_BF_SIZE = 14;
 
-    ofstream outFile(cfg.outputFile);
+    bool isNewFile = false;
+    ifstream testFile(cfg.outputFile);
+    if (!testFile.good() || testFile.peek() == ifstream::traits_type::eof()) {
+        isNewFile = true;
+    }
+    testFile.close();
+
+    ofstream outFile(cfg.outputFile, ios::app);
     if (!outFile.is_open()) {
         cerr << "Blad zapisu do pliku wyjsciowego: " << cfg.outputFile << endl;
         return 1;
     }
 
-    outFile << "Algorytm;Rozmiar;Koszt;Czas_us\n";
+    if (isNewFile) {
+        outFile << "Algorytm;Rozmiar;Repetycje;Iteracje_RAND;Koszt;Optimum;Blad_wzgledny_%;Czas_us\n";
+    }
 
-    cout << "=== SYMULACJA TSP ===" << endl;
-    cout << "Wybrany algorytm testowy: " << cfg.algorithm << endl;
+    cout << "Wybrany algorytm: " << cfg.algorithm << endl;
 
     int loopStart = cfg.generateRandom ? cfg.startInstanceSize : 0;
     int loopEnd = cfg.generateRandom ? (cfg.startInstanceSize + cfg.instancesCount - 1) : 0;
 
     for (int currentSize = loopStart; currentSize <= loopEnd; ++currentSize) {
         vector<vector<int>> graph;
+        int knownOptimumFromFile = 0;
 
         if (cfg.generateRandom) {
             graph = generateRandomGraph(currentSize, cfg.symmetric);
         } else {
-            graph = loadGraphFromFile(cfg.inputFile);
+            graph = loadGraphFromFile(cfg.inputFile, knownOptimumFromFile);
             currentSize = graph.size();
         }
 
-        cout << "\n-----------------------------------" << endl;
+        cout << "\n" << endl;
         cout << "Rozmiar instancji: " << currentSize << " x " << currentSize << endl;
-        cout << "Zajeta pamiec: " << fixed << setprecision(2) << calculateMemoryKB(currentSize) << " [KB]" << endl;
 
-        // --- Automatyczne szukanie optimum ---
-        int dynamicOptimum = 0;
+        int dynamicOptimum = knownOptimumFromFile;
 
         if (cfg.algorithm == "BF") {
             cout << "Testujemy BF, wiec jego wynik bedzie automatycznie optimum." << endl;
         }
-        else if (currentSize <= MAX_BF_SIZE) {
-            cout << "Wyznaczanie optimum (Brute Force)... " << flush;
-            dynamicOptimum = bruteForceTSP(graph);
-            cout << "Gotowe! Koszt optymalny = " << dynamicOptimum << endl;
-        } else {
-            cout << "Uwaga: Rozmiar > " << MAX_BF_SIZE << ". Pomijam wyznaczanie optimum (zbyt dlugi czas dla BF)." << endl;
+        else if (dynamicOptimum > 0) {
+            cout << "Wczytano optimum z pliku: " << dynamicOptimum << endl;
         }
+        else if (currentSize <= MAX_BF_SIZE) {
+            cout << "Brak optimum w pliku. Wyznaczanie optimum brute forcem. " << flush;
+            dynamicOptimum = bruteForceTSP(graph);
+            cout << "Koszt optymalny = " << dynamicOptimum << endl;
+        } else {
+            cout << "Rozmiar > " << MAX_BF_SIZE << " i brak 'sum_min'. Pomijam wyznaczanie optimum." << endl;
+        }
+
+        cout << "Calkowita zajeta pamiec RAM: " << fixed << setprecision(2) << getProcessMemoryKB() << " [KB]" << endl;
 
         vector<double> times;
         int lastCost = 0;
@@ -70,7 +81,7 @@ int main() {
             else if (cfg.algorithm == "RNN") cost = repetitiveNearestNeighbour(graph);
             else if (cfg.algorithm == "BF") cost = bruteForceTSP(graph);
             else {
-                cerr << "Nieznany algorytm w pliku konfiguracyjnym!" << endl;
+                cerr << "Nieznany algorytm w pliku konfiguracyjnym" << endl;
                 return 1;
             }
 
@@ -80,18 +91,38 @@ int main() {
             times.push_back(duration.count());
             lastCost = cost;
 
-            outFile << cfg.algorithm << ";" << currentSize << ";" << cost << ";" << duration.count() << "\n";
+            string optStr = "Brak";
+            string errStr = "Brak";
+
+            if (cfg.algorithm == "BF") {
+                optStr = to_string(cost);
+                errStr = "0.00";
+            } else if (dynamicOptimum > 0) {
+                optStr = to_string(dynamicOptimum);
+                double error = static_cast<double>(cost - dynamicOptimum) / dynamicOptimum * 100.0;
+                char buf[32];
+                snprintf(buf, sizeof(buf), "%.2f", error);
+                errStr = buf;
+            }
+
+            outFile << cfg.algorithm << ";"
+                    << currentSize << ";"
+                    << cfg.repetitions << ";"
+                    << cfg.randIterations << ";"
+                    << cost << ";"
+                    << optStr << ";"
+                    << errStr << ";"
+                    << duration.count() << "\n";
+
             printProgress(i, cfg.repetitions, cfg.showProgress);
         }
 
-        // --- Logowanie wynikow na ekran ---
         double mean = calculateMean(times);
-        double stdDev = calculateStdDev(times, mean);
 
         cout << "Wynik (" << cfg.algorithm << "): " << lastCost;
 
         if (cfg.algorithm == "BF") {
-            dynamicOptimum = lastCost; // Jesli to BF, to optimum to po prostu jego wynik
+            dynamicOptimum = lastCost;
         }
 
         if (dynamicOptimum > 0) {
@@ -101,12 +132,11 @@ int main() {
         cout << endl;
 
         cout << "Sredni czas: " << fixed << setprecision(2) << mean << " [us]" << endl;
-        cout << "Odchylenie stand.: " << fixed << setprecision(2) << stdDev << " [us]" << endl;
 
         if (!cfg.generateRandom) break;
     }
 
     outFile.close();
-    cout << "\nZakonczono pomyslnie. Wyniki zapisano w: " << cfg.outputFile << endl;
+    cout << "\nWyniki zapisano w: " << cfg.outputFile << endl;
     return 0;
 }

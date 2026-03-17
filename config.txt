@@ -1,15 +1,15 @@
-# --- Konfiguracja algorytmow TSP ---
-algorithm = RNN           # Dostepne: NN, RAND, RNN, BF
-repetitions = 1         # Liczba powtorzen dla usrednienia czasu
-randIterations = 1000000    # Ile sciezek ma sprawdzic algorytm RAND
+# Parametry algorytmu
+algorithm         = RAND         # Dostepne: NN, RAND, RNN, BF
+repetitions       = 10           # Liczba powtorzen dla usrednienia statystyk
+randIterations    = 1000000      # Ilosc losowanych sciezek dla alg. RAND
 
-# --- Dane wejsciowe / wyjsciowe ---
-generateRandom = 1       # 0 = plik, 1 = generator
-symmetric = 0           # 0 = asymetryczny, 1 = symetryczny
-inputFile = data/matrix_11x11.atsp
-outputFile = results/output.csv
+# Parametry instancji wejsciowej
+generateRandom    = 1            # 1 = wlasny generator, 0 = wczytywanie z pliku
+symmetric         = 0            # 1 = graf symetryczny, 0 = graf asymetryczny
+inputFile         = data/tsp/matrix_15x15.tsp
+outputFile        = results/output.csv
 
-# --- Pomiary ---
-startInstanceSize = 50    # Poczatkowy rozmiar badanej instancji
-instancesCount = 1       # Ilosc badanych instancji (np. 5 oznacza badanie N=6, 7, 8, 9, 10)
-showProgress = 1
+# Pomiary i petla testowa 
+startInstanceSize = 14           # Rozmiar poczatkowej instancji do zbadania
+instancesCount    = 1            # Ilosc badanych rozmiarow (np. 5 oznacza N=14, 15, 16, 17, 18)
+showProgress      = 1            # 1 = wyswietlaj pasek postepu w konsoli
