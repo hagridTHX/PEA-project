@@ -10,6 +10,9 @@ inputFile         = data/tsp/matrix_15x15.tsp
 outputFile        = results/output.csv
 
 # Pomiary i petla testowa
-startInstanceSize = 13           # Rozmiar poczatkowej instancji do zbadania
+startInstanceSize = 12           # Rozmiar poczatkowej instancji do zbadania
 instancesCount    = 1            # Ilosc badanych rozmiarow (np. 5 oznacza N=14, 15, 16, 17, 18)
 showProgress      = 1            # 1 = wyswietlaj pasek postepu w konsoli
+
+minWeight         = 1            # Minimalna waga krawedzi
+maxWeight         = 100          # Maksymalna waga krawedzi

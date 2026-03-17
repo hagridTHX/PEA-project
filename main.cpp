@@ -43,7 +43,7 @@ int main() {
         int knownOptimumFromFile = 0;
 
         if (cfg.generateRandom) {
-            graph = generateRandomGraph(currentSize, cfg.symmetric);
+            graph = generateRandomGraph(currentSize, cfg.symmetric, cfg.minWeight, cfg.maxWeight);
         } else {
             graph = loadGraphFromFile(cfg.inputFile, knownOptimumFromFile);
             currentSize = graph.size();

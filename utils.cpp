@@ -42,6 +42,8 @@ Config loadConfig(const string& filename) {
             else if (key == "showProgress") cfg.showProgress = (value == "1" || value == "true");
             else if (key == "generateRandom") cfg.generateRandom = (value == "1" || value == "true");
             else if (key == "symmetric") cfg.symmetric = (value == "1" || value == "true");
+            else if (key == "minWeight") cfg.minWeight = stoi(value);
+            else if (key == "maxWeight") cfg.maxWeight = stoi(value);
         }
     }
     file.close();

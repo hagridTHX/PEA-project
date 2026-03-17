@@ -20,6 +20,8 @@ struct Config {
     int startInstanceSize = 6;
     int instancesCount = 1;
     bool showProgress = true;
+    int minWeight = 1;
+    int maxWeight = 100;
 };
 
 std::string trim(const std::string& str);
