@@ -71,7 +71,6 @@ double calculateStdDev(const vector<double>& values, double mean) {
 
 double getProcessMemoryKB() {
 #ifdef _WIN32
-    // --- Wersja dla WINDOWS ---
     PROCESS_MEMORY_COUNTERS pmc;
     if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
         return static_cast<double>(pmc.WorkingSetSize) / 1024.0;

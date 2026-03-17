@@ -1,5 +1,5 @@
 # Parametry algorytmu
-algorithm         = RAND         # Dostepne: NN, RAND, RNN, BF
+algorithm         = BF         # Dostepne: NN, RAND, RNN, BF
 repetitions       = 10           # Liczba powtorzen dla usrednienia statystyk
 randIterations    = 1000000      # Ilosc losowanych sciezek dla alg. RAND
 
@@ -9,7 +9,7 @@ symmetric         = 0            # 1 = graf symetryczny, 0 = graf asymetryczny
 inputFile         = data/tsp/matrix_15x15.tsp
 outputFile        = results/output.csv
 
-# Pomiary i petla testowa 
-startInstanceSize = 14           # Rozmiar poczatkowej instancji do zbadania
+# Pomiary i petla testowa
+startInstanceSize = 13           # Rozmiar poczatkowej instancji do zbadania
 instancesCount    = 1            # Ilosc badanych rozmiarow (np. 5 oznacza N=14, 15, 16, 17, 18)
 showProgress      = 1            # 1 = wyswietlaj pasek postepu w konsoli
