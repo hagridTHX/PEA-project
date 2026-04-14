@@ -22,6 +22,7 @@ struct Config {
     bool showProgress = true;
     int minWeight = 1;
     int maxWeight = 100;
+    std::string ubStrategy = "INF";
 };
 
 std::string trim(const std::string& str);

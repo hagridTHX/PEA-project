@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <limits>
 
 #include "algorithms.h"
 #include "utils.h"
@@ -68,6 +69,29 @@ int main() {
             cout << "Rozmiar > " << MAX_BF_SIZE << " i brak 'sum_min'. Pomijam wyznaczanie optimum." << endl;
         }
 
+        // Determine initial Upper Bound for Branch and Bound
+        long long initialUB = numeric_limits<long long>::max();
+        if (cfg.algorithm.find("BB") == 0) {
+            cout << "Wyznaczanie poczatkowego Gornego Ograniczenia (UB) - strategia: " << cfg.ubStrategy << endl;
+
+            if (cfg.ubStrategy == "RAND") {
+                initialUB = randomSearch(graph, cfg.randIterations);
+                cout << "UB z RAND: " << initialUB << endl;
+            } else if (cfg.ubStrategy == "NN") {
+                initialUB = nearestNeighbour(graph, 0);
+                cout << "UB z NN: " << initialUB << endl;
+            } else if (cfg.ubStrategy == "RNN_NO_TIES") {
+                initialUB = repetitiveNearestNeighbourNoTies(graph);
+                cout << "UB z RNN_NO_TIES: " << initialUB << endl;
+            } else if (cfg.ubStrategy == "RNN_TIES") {
+                initialUB = repetitiveNearestNeighbour(graph);
+                cout << "UB z RNN_TIES: " << initialUB << endl;
+            } else {
+                // "INF" - domyslnie nieskonczonosc
+                cout << "UB = INF" << endl;
+            }
+        }
+
         cout << "Calkowita zajeta pamiec RAM: " << fixed << setprecision(2) << getProcessMemoryKB() << " [KB]" << endl;
 
         vector<double> times;
@@ -80,7 +104,11 @@ int main() {
             if (cfg.algorithm == "NN") cost = nearestNeighbour(graph, 0);
             else if (cfg.algorithm == "RAND") cost = randomSearch(graph, cfg.randIterations);
             else if (cfg.algorithm == "RNN") cost = repetitiveNearestNeighbour(graph);
+            else if (cfg.algorithm == "RNN_NO_TIES") cost = repetitiveNearestNeighbourNoTies(graph);
             else if (cfg.algorithm == "BF") cost = bruteForceTSP(graph);
+            else if (cfg.algorithm == "BB_BFS") cost = branchAndBoundBFS(graph, initialUB);
+            else if (cfg.algorithm == "BB_DFS") cost = branchAndBoundDFS(graph, initialUB);
+            else if (cfg.algorithm == "BB_BEST") cost = branchAndBoundBEST(graph, initialUB);
             else {
                 cerr << "Nieznany algorytm w pliku konfiguracyjnym" << endl;
                 return 1;
@@ -95,7 +123,7 @@ int main() {
             string optStr = "Brak";
             string errStr = "Brak";
 
-            if (cfg.algorithm == "BF") {
+            if (cfg.algorithm == "BF" || cfg.algorithm.find("BB") == 0) {
                 optStr = to_string(cost);
                 errStr = "0.00";
             } else if (dynamicOptimum > 0) {
@@ -122,7 +150,7 @@ int main() {
 
         cout << "Wynik (" << cfg.algorithm << "): " << lastCost;
 
-        if (cfg.algorithm == "BF") {
+        if (cfg.algorithm == "BF" || cfg.algorithm.find("BB") == 0) {
             dynamicOptimum = lastCost;
         }
 

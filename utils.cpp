@@ -44,6 +44,7 @@ Config loadConfig(const string& filename) {
             else if (key == "symmetric") cfg.symmetric = (value == "1" || value == "true");
             else if (key == "minWeight") cfg.minWeight = stoi(value);
             else if (key == "maxWeight") cfg.maxWeight = stoi(value);
+            else if (key == "ubStrategy") cfg.ubStrategy = value;
         }
     }
     file.close();
