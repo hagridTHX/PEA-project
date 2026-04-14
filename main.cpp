@@ -69,7 +69,6 @@ int main() {
             cout << "Rozmiar > " << MAX_BF_SIZE << " i brak 'sum_min'. Pomijam wyznaczanie optimum." << endl;
         }
 
-         // Determine initial Upper Bound for Branch and Bound
          int initialUB = numeric_limits<int>::max();
          if (cfg.algorithm.find("BB") == 0) {
             cout << "Wyznaczanie poczatkowego Gornego Ograniczenia (UB) - strategia: " << cfg.ubStrategy << endl;
@@ -87,7 +86,6 @@ int main() {
                 initialUB = repetitiveNearestNeighbour(graph);
                 cout << "UB z RNN_TIES: " << initialUB << endl;
             } else {
-                // "INF" - domyslnie nieskonczonosc
                 cout << "UB = INF" << endl;
             }
         }

@@ -14,7 +14,6 @@ int repetitiveNearestNeighbourNoTies(const std::vector<std::vector<int>>& graph)
 
 int bruteForceTSP(const std::vector<std::vector<int>>& graph);
 
-// Optimized Node structure for Branch and Bound with reference semantics
 struct Node {
     std::vector<int> path;
     int lowerBound;
@@ -34,12 +33,10 @@ struct Node {
     }
 };
 
-// Branch and Bound implementation
 int branchAndBoundBFS(const std::vector<std::vector<int>>& graph, int initialUB);
 int branchAndBoundDFS(const std::vector<std::vector<int>>& graph, int initialUB);
 int branchAndBoundBEST(const std::vector<std::vector<int>>& graph, int initialUB);
 
-// Helper function for matrix reduction
 int reduceMatrix(std::vector<std::vector<int>>& matrix);
 
 #endif

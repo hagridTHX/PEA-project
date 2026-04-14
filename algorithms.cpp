@@ -199,12 +199,10 @@ int repetitiveNearestNeighbourNoTies(const vector<vector<int>>& graph) {
      return globalBestCost;
  }
 
-// Helper function for matrix reduction (Little's Algorithm)
 int reduceMatrix(vector<vector<int>>& matrix) {
     int n = matrix.size();
     int reduction = 0;
 
-    // Row reduction
     for (int i = 0; i < n; ++i) {
         int minRow = numeric_limits<int>::max();
         for (int j = 0; j < n; ++j) {
@@ -222,7 +220,6 @@ int reduceMatrix(vector<vector<int>>& matrix) {
         }
     }
 
-    // Column reduction
     for (int j = 0; j < n; ++j) {
         int minCol = numeric_limits<int>::max();
         for (int i = 0; i < n; ++i) {
@@ -243,7 +240,6 @@ int reduceMatrix(vector<vector<int>>& matrix) {
     return reduction;
 }
 
-// BFS implementation of Branch and Bound
 int branchAndBoundBFS(const vector<vector<int>>& graph, int initialUB) {
     int n = graph.size();
     if (n <= 1) return 0;
@@ -252,7 +248,6 @@ int branchAndBoundBFS(const vector<vector<int>>& graph, int initialUB) {
     queue<Node> q;
     queue<vector<vector<int>>> matrices;
 
-    // Initial node setup
     Node root(n);
     vector<vector<int>> rootMatrix(n, vector<int>(n));
 
@@ -308,7 +303,6 @@ int branchAndBoundBFS(const vector<vector<int>>& graph, int initialUB) {
 
             vector<vector<int>> childMatrix = currentMatrix;
 
-            // Set infinity for used edges
             for (int j = 0; j < n; ++j) {
                 childMatrix[currentNode][j] = numeric_limits<int>::max();
                 childMatrix[j][nextNode] = numeric_limits<int>::max();
@@ -329,7 +323,6 @@ int branchAndBoundBFS(const vector<vector<int>>& graph, int initialUB) {
     return bestCost;
 }
 
-// DFS implementation of Branch and Bound
 int branchAndBoundDFS(const vector<vector<int>>& graph, int initialUB) {
     int n = graph.size();
     if (n <= 1) return 0;
@@ -338,7 +331,6 @@ int branchAndBoundDFS(const vector<vector<int>>& graph, int initialUB) {
     stack<Node> s;
     stack<vector<vector<int>>> matrices;
 
-    // Initial node setup
     Node root(n);
     vector<vector<int>> rootMatrix(n, vector<int>(n));
 
@@ -394,7 +386,6 @@ int branchAndBoundDFS(const vector<vector<int>>& graph, int initialUB) {
 
             vector<vector<int>> childMatrix = currentMatrix;
 
-            // Set infinity for used edges
             for (int j = 0; j < n; ++j) {
                 childMatrix[currentNode][j] = numeric_limits<int>::max();
                 childMatrix[j][nextNode] = numeric_limits<int>::max();
@@ -415,7 +406,6 @@ int branchAndBoundDFS(const vector<vector<int>>& graph, int initialUB) {
     return bestCost;
 }
 
-// Best-First (Priority Queue) implementation of Branch and Bound
 struct CompareNode {
     bool operator()(const Node& a, const Node& b) const {
         return a.lowerBound > b.lowerBound;
@@ -430,7 +420,6 @@ int branchAndBoundBEST(const vector<vector<int>>& graph, int initialUB) {
     priority_queue<Node, vector<Node>, CompareNode> pq;
     map<vector<int>, vector<vector<int>>> matrixCache;
 
-    // Initial node setup
     Node root(n);
     vector<vector<int>> rootMatrix(n, vector<int>(n));
 
@@ -487,7 +476,6 @@ int branchAndBoundBEST(const vector<vector<int>>& graph, int initialUB) {
 
             vector<vector<int>> childMatrix = currentMatrix;
 
-            // Set infinity for used edges
             for (int j = 0; j < n; ++j) {
                 childMatrix[currentNode][j] = numeric_limits<int>::max();
                 childMatrix[j][nextNode] = numeric_limits<int>::max();
