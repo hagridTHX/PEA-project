@@ -17,7 +17,7 @@ int bruteForceTSP(const std::vector<std::vector<int>>& graph);
 // Optimized Node structure for Branch and Bound with reference semantics
 struct Node {
     std::vector<int> path;
-    long long lowerBound;
+    int lowerBound;
     int level;
 
     Node(int n) : path(), lowerBound(0), level(0) {}
@@ -35,11 +35,11 @@ struct Node {
 };
 
 // Branch and Bound implementation
-int branchAndBoundBFS(const std::vector<std::vector<int>>& graph, long long initialUB);
-int branchAndBoundDFS(const std::vector<std::vector<int>>& graph, long long initialUB);
-int branchAndBoundBEST(const std::vector<std::vector<int>>& graph, long long initialUB);
+int branchAndBoundBFS(const std::vector<std::vector<int>>& graph, int initialUB);
+int branchAndBoundDFS(const std::vector<std::vector<int>>& graph, int initialUB);
+int branchAndBoundBEST(const std::vector<std::vector<int>>& graph, int initialUB);
 
 // Helper function for matrix reduction
-long long reduceMatrix(std::vector<std::vector<long long>>& matrix);
+int reduceMatrix(std::vector<std::vector<int>>& matrix);
 
 #endif

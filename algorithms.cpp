@@ -200,22 +200,22 @@ int repetitiveNearestNeighbourNoTies(const vector<vector<int>>& graph) {
  }
 
 // Helper function for matrix reduction (Little's Algorithm)
-long long reduceMatrix(vector<vector<long long>>& matrix) {
+int reduceMatrix(vector<vector<int>>& matrix) {
     int n = matrix.size();
-    long long reduction = 0;
+    int reduction = 0;
 
     // Row reduction
     for (int i = 0; i < n; ++i) {
-        long long minRow = LLONG_MAX;
+        int minRow = numeric_limits<int>::max();
         for (int j = 0; j < n; ++j) {
-            if (matrix[i][j] < minRow && matrix[i][j] != LLONG_MAX) {
+            if (matrix[i][j] < minRow && matrix[i][j] != numeric_limits<int>::max()) {
                 minRow = matrix[i][j];
             }
         }
-        if (minRow != LLONG_MAX && minRow > 0) {
+        if (minRow != numeric_limits<int>::max() && minRow > 0) {
             reduction += minRow;
             for (int j = 0; j < n; ++j) {
-                if (matrix[i][j] != LLONG_MAX) {
+                if (matrix[i][j] != numeric_limits<int>::max()) {
                     matrix[i][j] -= minRow;
                 }
             }
@@ -224,16 +224,16 @@ long long reduceMatrix(vector<vector<long long>>& matrix) {
 
     // Column reduction
     for (int j = 0; j < n; ++j) {
-        long long minCol = LLONG_MAX;
+        int minCol = numeric_limits<int>::max();
         for (int i = 0; i < n; ++i) {
-            if (matrix[i][j] < minCol && matrix[i][j] != LLONG_MAX) {
+            if (matrix[i][j] < minCol && matrix[i][j] != numeric_limits<int>::max()) {
                 minCol = matrix[i][j];
             }
         }
-        if (minCol != LLONG_MAX && minCol > 0) {
+        if (minCol != numeric_limits<int>::max() && minCol > 0) {
             reduction += minCol;
             for (int i = 0; i < n; ++i) {
-                if (matrix[i][j] != LLONG_MAX) {
+                if (matrix[i][j] != numeric_limits<int>::max()) {
                     matrix[i][j] -= minCol;
                 }
             }
@@ -244,23 +244,23 @@ long long reduceMatrix(vector<vector<long long>>& matrix) {
 }
 
 // BFS implementation of Branch and Bound
-int branchAndBoundBFS(const vector<vector<int>>& graph, long long initialUB) {
+int branchAndBoundBFS(const vector<vector<int>>& graph, int initialUB) {
     int n = graph.size();
     if (n <= 1) return 0;
 
-    long long globalUB = initialUB;
+    int globalUB = initialUB;
     queue<Node> q;
-    queue<vector<vector<long long>>> matrices;
+    queue<vector<vector<int>>> matrices;
 
     // Initial node setup
     Node root(n);
-    vector<vector<long long>> rootMatrix(n, vector<long long>(n));
+    vector<vector<int>> rootMatrix(n, vector<int>(n));
 
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
-            rootMatrix[i][j] = (graph[i][j] == numeric_limits<int>::max()) ? LLONG_MAX : graph[i][j];
+            rootMatrix[i][j] = (graph[i][j] == numeric_limits<int>::max()) ? numeric_limits<int>::max() : graph[i][j];
         }
-        rootMatrix[i][i] = LLONG_MAX;
+        rootMatrix[i][i] = numeric_limits<int>::max();
     }
 
     root.path.push_back(0);
@@ -277,14 +277,14 @@ int branchAndBoundBFS(const vector<vector<int>>& graph, long long initialUB) {
     while (!q.empty()) {
         Node current = q.front();
         q.pop();
-        vector<vector<long long>> currentMatrix = matrices.front();
+        vector<vector<int>> currentMatrix = matrices.front();
         matrices.pop();
 
         if (current.level == n) {
             int lastNode = current.path.back();
             int firstNode = current.path.front();
             if (graph[lastNode][firstNode] != numeric_limits<int>::max()) {
-                long long totalCost = current.lowerBound + graph[lastNode][firstNode];
+                int totalCost = current.lowerBound + graph[lastNode][firstNode];
                 if (totalCost < bestCost) {
                     bestCost = totalCost;
                     globalUB = bestCost;
@@ -306,17 +306,17 @@ int branchAndBoundBFS(const vector<vector<int>>& graph, long long initialUB) {
             child.path.push_back(nextNode);
             child.level++;
 
-            vector<vector<long long>> childMatrix = currentMatrix;
+            vector<vector<int>> childMatrix = currentMatrix;
 
             // Set infinity for used edges
             for (int j = 0; j < n; ++j) {
-                childMatrix[currentNode][j] = LLONG_MAX;
-                childMatrix[j][nextNode] = LLONG_MAX;
+                childMatrix[currentNode][j] = numeric_limits<int>::max();
+                childMatrix[j][nextNode] = numeric_limits<int>::max();
             }
-            childMatrix[nextNode][0] = LLONG_MAX;
+            childMatrix[nextNode][0] = numeric_limits<int>::max();
 
-            long long edgeCost = graph[currentNode][nextNode];
-            long long reduction = reduceMatrix(childMatrix);
+            int edgeCost = graph[currentNode][nextNode];
+            int reduction = reduceMatrix(childMatrix);
             child.lowerBound = current.lowerBound + edgeCost + reduction;
 
             if (child.lowerBound < globalUB) {
@@ -330,23 +330,23 @@ int branchAndBoundBFS(const vector<vector<int>>& graph, long long initialUB) {
 }
 
 // DFS implementation of Branch and Bound
-int branchAndBoundDFS(const vector<vector<int>>& graph, long long initialUB) {
+int branchAndBoundDFS(const vector<vector<int>>& graph, int initialUB) {
     int n = graph.size();
     if (n <= 1) return 0;
 
-    long long globalUB = initialUB;
+    int globalUB = initialUB;
     stack<Node> s;
-    stack<vector<vector<long long>>> matrices;
+    stack<vector<vector<int>>> matrices;
 
     // Initial node setup
     Node root(n);
-    vector<vector<long long>> rootMatrix(n, vector<long long>(n));
+    vector<vector<int>> rootMatrix(n, vector<int>(n));
 
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
-            rootMatrix[i][j] = (graph[i][j] == numeric_limits<int>::max()) ? LLONG_MAX : graph[i][j];
+            rootMatrix[i][j] = (graph[i][j] == numeric_limits<int>::max()) ? numeric_limits<int>::max() : graph[i][j];
         }
-        rootMatrix[i][i] = LLONG_MAX;
+        rootMatrix[i][i] = numeric_limits<int>::max();
     }
 
     root.path.push_back(0);
@@ -363,14 +363,14 @@ int branchAndBoundDFS(const vector<vector<int>>& graph, long long initialUB) {
     while (!s.empty()) {
         Node current = s.top();
         s.pop();
-        vector<vector<long long>> currentMatrix = matrices.top();
+        vector<vector<int>> currentMatrix = matrices.top();
         matrices.pop();
 
         if (current.level == n) {
             int lastNode = current.path.back();
             int firstNode = current.path.front();
             if (graph[lastNode][firstNode] != numeric_limits<int>::max()) {
-                long long totalCost = current.lowerBound + graph[lastNode][firstNode];
+                int totalCost = current.lowerBound + graph[lastNode][firstNode];
                 if (totalCost < bestCost) {
                     bestCost = totalCost;
                     globalUB = bestCost;
@@ -392,17 +392,17 @@ int branchAndBoundDFS(const vector<vector<int>>& graph, long long initialUB) {
             child.path.push_back(nextNode);
             child.level++;
 
-            vector<vector<long long>> childMatrix = currentMatrix;
+            vector<vector<int>> childMatrix = currentMatrix;
 
             // Set infinity for used edges
             for (int j = 0; j < n; ++j) {
-                childMatrix[currentNode][j] = LLONG_MAX;
-                childMatrix[j][nextNode] = LLONG_MAX;
+                childMatrix[currentNode][j] = numeric_limits<int>::max();
+                childMatrix[j][nextNode] = numeric_limits<int>::max();
             }
-            childMatrix[nextNode][0] = LLONG_MAX;
+            childMatrix[nextNode][0] = numeric_limits<int>::max();
 
-            long long edgeCost = graph[currentNode][nextNode];
-            long long reduction = reduceMatrix(childMatrix);
+            int edgeCost = graph[currentNode][nextNode];
+            int reduction = reduceMatrix(childMatrix);
             child.lowerBound = current.lowerBound + edgeCost + reduction;
 
             if (child.lowerBound < globalUB) {
@@ -422,23 +422,23 @@ struct CompareNode {
     }
 };
 
-int branchAndBoundBEST(const vector<vector<int>>& graph, long long initialUB) {
+int branchAndBoundBEST(const vector<vector<int>>& graph, int initialUB) {
     int n = graph.size();
     if (n <= 1) return 0;
 
-    long long globalUB = initialUB;
+    int globalUB = initialUB;
     priority_queue<Node, vector<Node>, CompareNode> pq;
-    map<vector<int>, vector<vector<long long>>> matrixCache;
+    map<vector<int>, vector<vector<int>>> matrixCache;
 
     // Initial node setup
     Node root(n);
-    vector<vector<long long>> rootMatrix(n, vector<long long>(n));
+    vector<vector<int>> rootMatrix(n, vector<int>(n));
 
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
-            rootMatrix[i][j] = (graph[i][j] == numeric_limits<int>::max()) ? LLONG_MAX : graph[i][j];
+            rootMatrix[i][j] = (graph[i][j] == numeric_limits<int>::max()) ? numeric_limits<int>::max() : graph[i][j];
         }
-        rootMatrix[i][i] = LLONG_MAX;
+        rootMatrix[i][i] = numeric_limits<int>::max();
     }
 
     root.path.push_back(0);
@@ -456,14 +456,14 @@ int branchAndBoundBEST(const vector<vector<int>>& graph, long long initialUB) {
         Node current = pq.top();
         pq.pop();
 
-        vector<vector<long long>> currentMatrix = matrixCache[current.path];
+        vector<vector<int>> currentMatrix = matrixCache[current.path];
         matrixCache.erase(current.path);
 
         if (current.level == n) {
             int lastNode = current.path.back();
             int firstNode = current.path.front();
             if (graph[lastNode][firstNode] != numeric_limits<int>::max()) {
-                long long totalCost = current.lowerBound + graph[lastNode][firstNode];
+                int totalCost = current.lowerBound + graph[lastNode][firstNode];
                 if (totalCost < bestCost) {
                     bestCost = totalCost;
                     globalUB = bestCost;
@@ -485,17 +485,17 @@ int branchAndBoundBEST(const vector<vector<int>>& graph, long long initialUB) {
             child.path.push_back(nextNode);
             child.level++;
 
-            vector<vector<long long>> childMatrix = currentMatrix;
+            vector<vector<int>> childMatrix = currentMatrix;
 
             // Set infinity for used edges
             for (int j = 0; j < n; ++j) {
-                childMatrix[currentNode][j] = LLONG_MAX;
-                childMatrix[j][nextNode] = LLONG_MAX;
+                childMatrix[currentNode][j] = numeric_limits<int>::max();
+                childMatrix[j][nextNode] = numeric_limits<int>::max();
             }
-            childMatrix[nextNode][0] = LLONG_MAX;
+            childMatrix[nextNode][0] = numeric_limits<int>::max();
 
-            long long edgeCost = graph[currentNode][nextNode];
-            long long reduction = reduceMatrix(childMatrix);
+            int edgeCost = graph[currentNode][nextNode];
+            int reduction = reduceMatrix(childMatrix);
             child.lowerBound = current.lowerBound + edgeCost + reduction;
 
             if (child.lowerBound < globalUB) {
@@ -507,4 +507,3 @@ int branchAndBoundBEST(const vector<vector<int>>& graph, long long initialUB) {
 
     return bestCost;
 }
-

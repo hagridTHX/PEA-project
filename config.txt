@@ -1,19 +1,13 @@
-# Parametry algorytmu
-algorithm         = NN           # Dostepne: NN, RAND, RNN, RNN_NO_TIES, BF, BB_BFS, BB_DFS, BB_BEST
-repetitions       = 10           # Liczba powtorzen dla usrednienia statystyk
-randIterations    = 1000000      # Ilosc losowanych sciezek dla alg. RAND
-ubStrategy        = INF          # Strategia UB dla B&B: INF, RAND, NN, RNN_NO_TIES, RNN_TIES
-
-# Parametry instancji wejsciowej
-generateRandom    = 1            # 1 = wlasny generator, 0 = wczytywanie z pliku
-symmetric         = 1            # 1 = graf symetryczny, 0 = graf asymetryczny
-inputFile         = data/tsp/matrix_10x10.tsp
-outputFile        = results/output.csv
-
-# Pomiary i petla testowa
-startInstanceSize = 6            # Rozmiar poczatkowej instancji do zbadania
-instancesCount    = 1            # Ilosc badanych rozmiarow (np. 5 oznacza N=11, 12, 13, 14, 15)
-showProgress      = 1            # 1 = wyswietlaj pasek postepu w konsoli
-
-minWeight         = 1            # Minimalna waga krawedzi
-maxWeight         = 100          # Maksymalna waga krawedzi
+algorithm         = BB_BFS
+repetitions       = 1
+randIterations    = 1000
+ubStrategy        = INF
+generateRandom    = 0
+symmetric         = 0
+inputFile         = .\data\tsp\matrix_12x12_01.tsp
+outputFile        = .\results\faza1_BB_BFS_tsp.csv
+startInstanceSize = 12
+instancesCount    = 1
+showProgress      = 0
+minWeight         = 1
+maxWeight         = 100

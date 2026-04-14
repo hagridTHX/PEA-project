@@ -31,7 +31,7 @@ for %%A in (BB_BFS BB_DFS BB_BEST) do (
             echo Algorytm;Rozmiar;Repetycje;Iteracje_RAND;Koszt;Optimum;Blad_wzgledny_%%;Czas_us > "!OUT!"
         )
 
-        for /L %%N in (5,1,15) do (
+        for /L %%N in (5,1,11) do (
             echo -^> Badam: %%A ^| Graf: %%P ^| Rozmiar: N=%%N
 
             for /L %%I in (1,1,20) do (
