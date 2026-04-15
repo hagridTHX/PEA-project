@@ -64,14 +64,14 @@ int main() {
         else if (currentSize <= MAX_BF_SIZE) {
             cout << "Brak optimum w pliku. Wyznaczanie optimum brute forcem. " << flush;
             dynamicOptimum = bruteForceTSP(graph);
-            cout << "Koszt optymalny = " << dynamicOptimum << endl;
+            cout << "\nKoszt optymalny = " << dynamicOptimum << endl;
         } else {
             cout << "Rozmiar > " << MAX_BF_SIZE << " i brak 'sum_min'. Pomijam wyznaczanie optimum." << endl;
         }
 
          int initialUB = numeric_limits<int>::max();
          if (cfg.algorithm.find("BB") == 0) {
-            cout << "Wyznaczanie poczatkowego Gornego Ograniczenia (UB) - strategia: " << cfg.ubStrategy << endl;
+            cout << "Wyznaczanie poczatkowego Gornego Ograniczenia - strategia: " << cfg.ubStrategy << endl;
 
             if (cfg.ubStrategy == "RAND") {
                 initialUB = randomSearch(graph, cfg.randIterations);

@@ -267,7 +267,7 @@ int branchAndBoundBFS(const vector<vector<int>>& graph, int initialUB) {
         matrices.push(rootMatrix);
     }
 
-    int bestCost = numeric_limits<int>::max();
+    int bestCost = initialUB;
 
     while (!q.empty()) {
         Node current = q.front();
@@ -355,7 +355,7 @@ int branchAndBoundDFS(const vector<vector<int>>& graph, int initialUB) {
         matrices.push(rootMatrix);
     }
 
-    int bestCost = numeric_limits<int>::max();
+    int bestCost = initialUB;
 
     while (!s.empty()) {
         Node current = s.top();
@@ -449,7 +449,7 @@ int branchAndBoundBEST(const vector<vector<int>>& graph, int initialUB) {
         matrixCache[root.path] = rootMatrix;
     }
 
-    int bestCost = numeric_limits<int>::max();
+    int bestCost = initialUB;
 
     while (!pq.empty()) {
         Node current = pq.top();
