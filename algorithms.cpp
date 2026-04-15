@@ -279,9 +279,14 @@ int branchAndBoundBFS(const vector<vector<int>>& graph, int initialUB) {
             int lastNode = current.path.back();
             int firstNode = current.path.front();
             if (graph[lastNode][firstNode] != numeric_limits<int>::max()) {
-                int totalCost = current.lowerBound + graph[lastNode][firstNode];
-                if (totalCost < bestCost) {
-                    bestCost = totalCost;
+                int actualTotalCost = 0;
+                for (size_t i = 0; i < current.path.size() - 1; ++i) {
+                    actualTotalCost += graph[current.path[i]][current.path[i+1]];
+                }
+                actualTotalCost += graph[lastNode][firstNode];
+
+                if (actualTotalCost < bestCost) {
+                    bestCost = actualTotalCost;
                     globalUB = bestCost;
                 }
             }
@@ -309,7 +314,7 @@ int branchAndBoundBFS(const vector<vector<int>>& graph, int initialUB) {
             }
             childMatrix[nextNode][0] = numeric_limits<int>::max();
 
-            int edgeCost = graph[currentNode][nextNode];
+            int edgeCost = currentMatrix[currentNode][nextNode];
             int reduction = reduceMatrix(childMatrix);
             child.lowerBound = current.lowerBound + edgeCost + reduction;
 
@@ -362,9 +367,14 @@ int branchAndBoundDFS(const vector<vector<int>>& graph, int initialUB) {
             int lastNode = current.path.back();
             int firstNode = current.path.front();
             if (graph[lastNode][firstNode] != numeric_limits<int>::max()) {
-                int totalCost = current.lowerBound + graph[lastNode][firstNode];
-                if (totalCost < bestCost) {
-                    bestCost = totalCost;
+                int actualTotalCost = 0;
+                for (size_t i = 0; i < current.path.size() - 1; ++i) {
+                    actualTotalCost += graph[current.path[i]][current.path[i+1]];
+                }
+                actualTotalCost += graph[lastNode][firstNode];
+
+                if (actualTotalCost < bestCost) {
+                    bestCost = actualTotalCost;
                     globalUB = bestCost;
                 }
             }
@@ -392,7 +402,7 @@ int branchAndBoundDFS(const vector<vector<int>>& graph, int initialUB) {
             }
             childMatrix[nextNode][0] = numeric_limits<int>::max();
 
-            int edgeCost = graph[currentNode][nextNode];
+            int edgeCost = currentMatrix[currentNode][nextNode];
             int reduction = reduceMatrix(childMatrix);
             child.lowerBound = current.lowerBound + edgeCost + reduction;
 
@@ -452,9 +462,14 @@ int branchAndBoundBEST(const vector<vector<int>>& graph, int initialUB) {
             int lastNode = current.path.back();
             int firstNode = current.path.front();
             if (graph[lastNode][firstNode] != numeric_limits<int>::max()) {
-                int totalCost = current.lowerBound + graph[lastNode][firstNode];
-                if (totalCost < bestCost) {
-                    bestCost = totalCost;
+                int actualTotalCost = 0;
+                for (size_t i = 0; i < current.path.size() - 1; ++i) {
+                    actualTotalCost += graph[current.path[i]][current.path[i+1]];
+                }
+                actualTotalCost += graph[lastNode][firstNode];
+
+                if (actualTotalCost < bestCost) {
+                    bestCost = actualTotalCost;
                     globalUB = bestCost;
                 }
             }
@@ -482,7 +497,7 @@ int branchAndBoundBEST(const vector<vector<int>>& graph, int initialUB) {
             }
             childMatrix[nextNode][0] = numeric_limits<int>::max();
 
-            int edgeCost = graph[currentNode][nextNode];
+            int edgeCost = currentMatrix[currentNode][nextNode];
             int reduction = reduceMatrix(childMatrix);
             child.lowerBound = current.lowerBound + edgeCost + reduction;
 

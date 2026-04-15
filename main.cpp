@@ -82,9 +82,9 @@ int main() {
             } else if (cfg.ubStrategy == "RNN_NO_TIES") {
                 initialUB = repetitiveNearestNeighbourNoTies(graph);
                 cout << "UB z RNN_NO_TIES: " << initialUB << endl;
-            } else if (cfg.ubStrategy == "RNN_TIES") {
+            } else if (cfg.ubStrategy == "RNN") {
                 initialUB = repetitiveNearestNeighbour(graph);
-                cout << "UB z RNN_TIES: " << initialUB << endl;
+                cout << "UB z RNN: " << initialUB << endl;
             } else {
                 cout << "UB = INF" << endl;
             }
