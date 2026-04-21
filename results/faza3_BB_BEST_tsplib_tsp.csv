@@ -1,0 +1,3 @@
+Algorytm;Rozmiar;Repetycje;Iteracje_RAND;Koszt;Optimum;Blad_wzgledny_%;Czas_us 
+BB_BEST;14;1;1000;30;30;0.00;110122
+BB_BEST;16;1;1000;71;71;0.00;17929383
