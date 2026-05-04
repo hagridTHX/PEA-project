@@ -1,4 +1,0 @@
-Algorytm;Rozmiar;Repetycje;Iteracje_RAND;Koszt;Optimum;Blad_wzgledny_%;Czas_us 
-BB_DFS;14;1;1000;30;30;0.00;12162
-BB_DFS;16;1;1000;71;71;0.00;1075009
-BB_DFS;22;1;1000;72;72;0.00;279267979

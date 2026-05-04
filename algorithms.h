@@ -4,11 +4,15 @@
 #include <vector>
 #include <deque>
 
+struct Config;
+
 int nearestNeighbour(const std::vector<std::vector<int>>& graph, int startNode);
 
 int randomSearch(const std::vector<std::vector<int>>& graph, int iterations);
 
 int repetitiveNearestNeighbour(const std::vector<std::vector<int>>& graph);
+
+std::vector<int> getRNNPath(const std::vector<std::vector<int>>& graph);
 
 int repetitiveNearestNeighbourNoTies(const std::vector<std::vector<int>>& graph);
 
@@ -38,5 +42,10 @@ int branchAndBoundDFS(const std::vector<std::vector<int>>& graph, int initialUB)
 int branchAndBoundBEST(const std::vector<std::vector<int>>& graph, int initialUB);
 
 int reduceMatrix(std::vector<std::vector<int>>& matrix);
+
+int calculateMSTLowerBound(const std::vector<std::vector<int>>& graph);
+
+int tabuSearch(const std::vector<std::vector<int>>& graph, const std::vector<int>& initialPath, int lowerBound, const Config& cfg);
+int simulatedAnnealing(const std::vector<std::vector<int>>& graph, const std::vector<int>& initialPath, int lowerBound, const Config& cfg);
 
 #endif

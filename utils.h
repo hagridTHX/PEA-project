@@ -23,6 +23,15 @@ struct Config {
     int minWeight = 1;
     int maxWeight = 100;
     std::string ubStrategy = "INF";
+    std::string metaNeighborhood = "SWAP";
+    int tsMaxIterations = 1000;
+    int tsTenure = 10;
+    bool tsAspiration = true;
+    double saInitialTemp = 1000.0;
+    double saCoolingRate = 0.95;
+    int saEpochLength = 100;
+    double saMinTemp = 0.001;
+    std::string saCoolingSchema = "GEOMETRIC";
 };
 
 std::string trim(const std::string& str);

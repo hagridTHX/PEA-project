@@ -1,13 +1,28 @@
-algorithm         = BB_BEST
-repetitions       = 1
-randIterations    = 1000
-ubStrategy        = INF
-generateRandom    = 0
-symmetric         = 1
-inputFile         = .\tsplib\tsp\ulysses22.tsp
-outputFile        = .\results\faza3_BB_BEST_tsplib_tsp.csv
-startInstanceSize = 0
-instancesCount    = 1
-showProgress      = 0
-minWeight         = 1
-maxWeight         = 100
+# Parametry algorytmu
+algorithm         = BB_BEST      # Dostepne: NN, RAND, RNN, RNN_NO_TIES, BF, BB_BFS, BB_DFS, BB_BEST, TABU_SEARCH, SIMULATED_ANNEALING
+repetitions       = 1            # Liczba powtorzen dla usrednienia statystyk
+randIterations    = 1000000      # Ilosc losowanych sciezek dla alg. RAND
+ubStrategy        = INF          # Strategia UB dla B&B: INF, RAND, NN, RNN, RNN_NO_TIES
+metaNeighborhood  = SWAP         # Dostepne: SWAP, TWO_OPT
+tsMaxIterations   = 1000         # Maksymalna liczba iteracji dla Tabu Search
+tsTenure          = 10           # Dlugosc listy tabu (kadencja)
+tsAspiration      = 1            # 1 = wlacz kryterium aspiracji, 0 = wylacz
+saInitialTemp     = 1000.0       # Temperatura poczatkowa
+saCoolingRate     = 0.95         # Wspolczynnik chlodzenia
+saEpochLength     = 100          # Dlugosc epoki (iteracje dla jednej temperatury)
+saMinTemp         = 0.001        # Temperatura minimalna (warunek stopu)
+saCoolingSchema   = GEOMETRIC    # Dostepne: GEOMETRIC, LINEAR
+
+# Parametry instancji wejsciowej
+generateRandom    = 0            # 1 = wlasny generator, 0 = wczytywanie z pliku
+symmetric         = 1            # 1 = graf symetryczny, 0 = graf asymetryczny
+inputFile         = tsplib/tsp/ulysses22.tsp
+outputFile        = results/faza3_BB_BEST_tsplib_tsp.csv
+
+# Pomiary i petla testowa
+startInstanceSize = 30           # Rozmiar poczatkowej instancji do zbadania
+instancesCount    = 1            # Ilosc badanych rozmiarow (np. 5 oznacza N=11, 12, 13, 14, 15)
+showProgress      = 1            # 1 = wyswietlaj pasek postepu w konsoli
+
+minWeight         = 1            # Minimalna waga krawedzi
+maxWeight         = 100          # Maksymalna waga krawedzi

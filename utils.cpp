@@ -45,6 +45,15 @@ Config loadConfig(const string& filename) {
             else if (key == "minWeight") cfg.minWeight = stoi(value);
             else if (key == "maxWeight") cfg.maxWeight = stoi(value);
             else if (key == "ubStrategy") cfg.ubStrategy = value;
+            else if (key == "metaNeighborhood") cfg.metaNeighborhood = value;
+            else if (key == "tsMaxIterations") cfg.tsMaxIterations = stoi(value);
+            else if (key == "tsTenure") cfg.tsTenure = stoi(value);
+            else if (key == "tsAspiration") cfg.tsAspiration = (value == "1" || value == "true");
+            else if (key == "saInitialTemp") cfg.saInitialTemp = stod(value);
+            else if (key == "saCoolingRate") cfg.saCoolingRate = stod(value);
+            else if (key == "saEpochLength") cfg.saEpochLength = stoi(value);
+            else if (key == "saMinTemp") cfg.saMinTemp = stod(value);
+            else if (key == "saCoolingSchema") cfg.saCoolingSchema = value;
         }
     }
     file.close();

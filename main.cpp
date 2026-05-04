@@ -90,6 +90,13 @@ int main() {
             }
         }
 
+        int lowerBound = 0;
+        vector<int> initialPath;
+        if (cfg.algorithm == "TABU_SEARCH" || cfg.algorithm == "SIMULATED_ANNEALING") {
+            lowerBound = calculateMSTLowerBound(graph);
+            initialPath = getRNNPath(graph);
+        }
+
         cout << "Calkowita zajeta pamiec RAM: " << fixed << setprecision(2) << getProcessMemoryKB() << " [KB]" << endl;
 
         vector<double> times;
@@ -107,6 +114,8 @@ int main() {
             else if (cfg.algorithm == "BB_BFS") cost = branchAndBoundBFS(graph, initialUB);
             else if (cfg.algorithm == "BB_DFS") cost = branchAndBoundDFS(graph, initialUB);
             else if (cfg.algorithm == "BB_BEST") cost = branchAndBoundBEST(graph, initialUB);
+            else if (cfg.algorithm == "TABU_SEARCH") cost = tabuSearch(graph, initialPath, lowerBound, cfg);
+            else if (cfg.algorithm == "SIMULATED_ANNEALING") cost = simulatedAnnealing(graph, initialPath, lowerBound, cfg);
             else {
                 cerr << "Nieznany algorytm w pliku konfiguracyjnym" << endl;
                 return 1;
