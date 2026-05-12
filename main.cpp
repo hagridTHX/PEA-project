@@ -31,7 +31,7 @@ int main() {
     }
 
     if (isNewFile) {
-        outFile << "Algorytm;Rozmiar;Repetycje;Iteracje_RAND;Koszt;Optimum;Blad_wzgledny_%;Czas_us\n";
+        outFile << "Algorytm;Rozmiar;Repetycje;UB_Strategy;Sasiedztwo;TS_MaxIter;TS_Tenure;TS_Asp;Koszt;Optimum;Blad_wzgledny_%;Czas_us\n";
     }
 
     cout << "Wybrany algorytm: " << cfg.algorithm << endl;
@@ -92,9 +92,11 @@ int main() {
 
         int lowerBound = 0;
         vector<int> initialPath;
-        if (cfg.algorithm == "TABU_SEARCH" || cfg.algorithm == "SIMULATED_ANNEALING") {
+        if (cfg.algorithm == "TABU_SEARCH") {
             lowerBound = calculateMSTLowerBound(graph);
-            initialPath = getRNNPath(graph);
+            if (cfg.ubStrategy == "RNN") {
+                initialPath = getRNNPath(graph);
+            }
         }
 
         cout << "Calkowita zajeta pamiec RAM: " << fixed << setprecision(2) << getProcessMemoryKB() << " [KB]" << endl;
@@ -115,7 +117,6 @@ int main() {
             else if (cfg.algorithm == "BB_DFS") cost = branchAndBoundDFS(graph, initialUB);
             else if (cfg.algorithm == "BB_BEST") cost = branchAndBoundBEST(graph, initialUB);
             else if (cfg.algorithm == "TABU_SEARCH") cost = tabuSearch(graph, initialPath, lowerBound, cfg);
-            else if (cfg.algorithm == "SIMULATED_ANNEALING") cost = simulatedAnnealing(graph, initialPath, lowerBound, cfg);
             else {
                 cerr << "Nieznany algorytm w pliku konfiguracyjnym" << endl;
                 return 1;
@@ -141,10 +142,20 @@ int main() {
                 errStr = errorStream.str();
             }
 
+            bool isTS = (cfg.algorithm == "TABU_SEARCH");
+
+            string tsMaxStr = isTS ? to_string(cfg.tsMaxIterations) : "-";
+            string tsTenStr = isTS ? to_string(cfg.tsTenure) : "-";
+            string tsAspStr = isTS ? (cfg.tsAspiration ? "1" : "0") : "-";
+
             outFile << cfg.algorithm << ";"
                     << currentSize << ";"
                     << cfg.repetitions << ";"
-                    << cfg.randIterations << ";"
+                    << cfg.ubStrategy << ";"
+                    << cfg.metaNeighborhood << ";"
+                    << tsMaxStr << ";"
+                    << tsTenStr << ";"
+                    << tsAspStr << ";"
                     << cost << ";"
                     << optStr << ";"
                     << errStr << ";"

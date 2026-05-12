@@ -46,6 +46,5 @@ int reduceMatrix(std::vector<std::vector<int>>& matrix);
 int calculateMSTLowerBound(const std::vector<std::vector<int>>& graph);
 
 int tabuSearch(const std::vector<std::vector<int>>& graph, const std::vector<int>& initialPath, int lowerBound, const Config& cfg);
-int simulatedAnnealing(const std::vector<std::vector<int>>& graph, const std::vector<int>& initialPath, int lowerBound, const Config& cfg);
 
 #endif
