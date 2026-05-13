@@ -1,0 +1,5 @@
+Algorytm;Rozmiar;Repetycje;UB_Strategy;Sasiedztwo;TS_MaxIter;TS_Tenure;TS_Asp;Koszt;Optimum;Blad_wzgledny_%;Czas_us
+TABU_SEARCH;17;1;RNN;TWO_OPT;5000;20;1;39;Brak;Brak;4467
+TABU_SEARCH;34;1;RNN;TWO_OPT;5000;20;1;1507;Brak;Brak;14006
+TABU_SEARCH;36;1;RNN;TWO_OPT;5000;20;1;1634;Brak;Brak;21973
+TABU_SEARCH;39;1;RNN;TWO_OPT;5000;20;1;1658;Brak;Brak;20115
