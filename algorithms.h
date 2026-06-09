@@ -47,4 +47,6 @@ int calculateMSTLowerBound(const std::vector<std::vector<int>>& graph);
 
 int tabuSearch(const std::vector<std::vector<int>>& graph, const std::vector<int>& initialPath, int lowerBound, const Config& cfg);
 
+int antColonyOptimization(const std::vector<std::vector<int>>& graph, const Config& cfg);
+
 #endif

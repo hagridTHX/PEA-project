@@ -27,6 +27,11 @@ struct Config {
     int tsMaxIterations = 1000;
     int tsTenure = 10;
     bool tsAspiration = true;
+    int acoAnts = 50;
+    int acoIterations = 100;
+    double acoAlpha = 1.0;
+    double acoBeta = 2.0;
+    double acoRho = 0.5;
 };
 
 std::string trim(const std::string& str);

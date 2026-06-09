@@ -1,20 +1,22 @@
-algorithm         = TABU_SEARCH  # Dostepne: NN, RAND, RNN, RNN_NO_TIES, BF, BB_BFS, BB_DFS, BB_BEST, TABU_SEARCH
-repetitions       = 1            # Liczba powtorzen dla usrednienia statystyk
-randIterations    = 1000         # Ilosc losowanych sciezek dla algorytmu RAND
-ubStrategy        = RNN          # Rozwiazanie startowe / UB: INF, RAND, NN, RNN, RNN_NO_TIES
-
-metaNeighborhood  = TWO_OPT      # Metoda generowania sasiedztwa: SWAP, TWO_OPT
-tsMaxIterations   = 1000         # Maksymalna liczba iteracji algorytmu
-tsTenure          = 3            # Dlugosc listy tabu
-tsAspiration      = 1            # 1 = wlacz kryterium aspiracji, 0 = wylacz
-
-generateRandom    = 0            # 1 = wlasny generator, 0 = wczytywanie z pliku
-symmetric         = 0            # 1 = graf symetryczny (TSP), 0 = asymetryczny (ATSP)
-inputFile         = .\data\atsp\matrix_7x7_04.atsp
-outputFile        = .\results\ts_faza1_basic_atsp_UB_RNN.csv
-
-startInstanceSize = 7            # Rozmiar poczatkowej instancji do zbadania (N)
-instancesCount    = 1            # Ilosc badanych rozmiarow (np. 5 oznacza badanie N, N+1... N+4)
-showProgress      = 0            # 1 = wyswietlaj pasek postepu w konsoli, 0 = wylacz
-minWeight         = 1            # Minimalna waga krawedzi (dla wlasnego generatora)
-maxWeight         = 100          # Maksymalna waga krawedzi (dla wlasnego generatora)
+algorithm         = TABU_SEARCH
+repetitions       = 1
+randIterations    = 1000
+ubStrategy        = RNN
+metaNeighborhood  = TWO_OPT
+tsMaxIterations   = 446100
+tsTenure          = 2230
+tsAspiration      = 1
+generateRandom    = 0
+symmetric         = 1
+inputFile         = .\tsplib\tsp\fnl4461.tsp
+outputFile        = .\results\ts_faza4_tsplib_tsp.csv
+startInstanceSize = 0
+instancesCount    = 1
+showProgress      = 0
+minWeight         = 1
+maxWeight         = 100
+acoAnts           = 50
+acoIterations     = 100
+acoAlpha          = 1.0
+acoBeta           = 2.0
+acoRho            = 0.5

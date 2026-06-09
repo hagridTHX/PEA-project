@@ -49,6 +49,11 @@ Config loadConfig(const string& filename) {
             else if (key == "tsMaxIterations") cfg.tsMaxIterations = stoi(value);
             else if (key == "tsTenure") cfg.tsTenure = stoi(value);
             else if (key == "tsAspiration") cfg.tsAspiration = (value == "1" || value == "true");
+            else if (key == "acoAnts") cfg.acoAnts = stoi(value);
+            else if (key == "acoIterations") cfg.acoIterations = stoi(value);
+            else if (key == "acoAlpha") cfg.acoAlpha = stod(value);
+            else if (key == "acoBeta") cfg.acoBeta = stod(value);
+            else if (key == "acoRho") cfg.acoRho = stod(value);
         }
     }
     file.close();

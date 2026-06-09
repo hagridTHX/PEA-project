@@ -4,9 +4,9 @@ setlocal enabledelayedexpansion
 REM =======================================================
 REM FLAGI STERUJACE (1 = wlacz, 0 = wylacz)
 REM =======================================================
-set "RUN_PHASE_1=1"
-set "RUN_PHASE_2=1"
-set "RUN_PHASE_3=1"
+set "RUN_PHASE_1=0"
+set "RUN_PHASE_2=0"
+set "RUN_PHASE_3=0"
 set "RUN_PHASE_4=1"
 
 set "EXE=.\cmake-build-debug\PEA_project_1.exe"
@@ -81,11 +81,11 @@ if "%RUN_PHASE_1%"=="1" (
 
 
 REM =======================================================
-REM FAZA 2: Tabu Search - Wplyw wyboru sasiedztwa (SWAP vs 2-OPT)
+REM FAZA 2: Tabu Search - Wplyw wyboru sasiedztwa
 REM =======================================================
 if "%RUN_PHASE_2%"=="1" (
     echo =======================================================
-    echo FAZA 2: Tabu Search - Strojenie (Sasiedztwo)
+    echo FAZA 2: Tabu Search - Strojenie [Sasiedztwo]
     echo =======================================================
 
     for %%A in (TABU_SEARCH) do (
@@ -125,17 +125,17 @@ if "%RUN_PHASE_2%"=="1" (
 
 
 REM =======================================================
-REM FAZA 3: Tabu Search - Wplyw kadencji (Tenure) i Aspiracji
+REM FAZA 3: Tabu Search - Wplyw kadencji i Aspiracji
 REM =======================================================
 if "%RUN_PHASE_3%"=="1" (
     echo =======================================================
-    echo FAZA 3: Tabu Search - Strojenie (Kadencja i Aspiracja)
+    echo FAZA 3: Tabu Search - Strojenie [Kadencja i Aspiracja]
     echo =======================================================
 
     for %%A in (TABU_SEARCH) do (
         for %%P in (tsp atsp) do (
-            REM Testujemy rozne kadencje dla N=12: 6 (N/2), 10 (stala), 12 (N)
-            for %%T in (6 10 12) do (
+            REM Testujemy rozne kadencje dla N=12: 3, 6 (N/2), 10 (stala), 12 (N)
+            for %%T in (3 6 10 12) do (
                 for %%S in (0 1) do (
                     set "OUT=.\results\ts_faza3_params_%%P_Tenure_%%T_Asp_%%S.csv"
                     if not exist "!OUT!" (
@@ -170,13 +170,12 @@ if "%RUN_PHASE_3%"=="1" (
     echo Pominieto Faze 3.
 )
 
-
 REM =======================================================
-REM FAZA 4: TSPLIB - max size challenge (15 min timeout)
+REM FAZA 4: TSPLIB - max size challenge
 REM =======================================================
 if "%RUN_PHASE_4%"=="1" (
     echo =======================================================
-    echo FAZA 4: TSPLIB - (Weryfikacja maksymalnych instancji)
+    echo FAZA 4: TSPLIB - [Weryfikacja maksymalnych instancji]
     echo =======================================================
 
     for %%A in (TABU_SEARCH) do (
@@ -191,14 +190,24 @@ if "%RUN_PHASE_4%"=="1" (
 
             for %%F in (.\tsplib\%%P\*.*) do (
                 set "IN=%%F"
-                echo -^> %%A ^| %%P ^| TSPLIB: %%~nxF
+                set "FILENAME=%%~nxF"
+                set "BASENAME=%%~nF"
+
+                REM Wyciagniecie liczby z nazwy pliku (np. eil51 -> 51)
+                for /f %%S in ('powershell -NoProfile -Command "if ('!BASENAME!' -match '\d+') { $matches[0] } else { '50' }"') do set "N_REAL=%%S"
+                REM Jesli plik nie ma liczby w nazwie (zabezpieczenie), ustawiamy N=50
+                if "!N_REAL!"=="" set "N_REAL=50"
+
+                REM Dynamiczne obliczanie parametrow (Kadencja = N/2, Iteracje = N * 100)
+                set /a TS_TEN=N_REAL / 2
+                set /a TS_MAX=N_REAL * 100
+
+                echo -^> %%A ^| %%P ^| TSPLIB: !FILENAME! ^| N=!N_REAL! ^| MAX_ITER=!TS_MAX! ^| TENURE=!TS_TEN!
 
                 if exist "!IN!" (
                     set "ALGO=%%A"
                     set "UB=RNN"
                     set "META=TWO_OPT"
-                    set "TS_MAX=5000"
-                    set "TS_TEN=20"
                     set "TS_ASP=1"
                     set "N_SIZE=0"
                     call :RunWithConfig

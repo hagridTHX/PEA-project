@@ -117,6 +117,7 @@ int main() {
             else if (cfg.algorithm == "BB_DFS") cost = branchAndBoundDFS(graph, initialUB);
             else if (cfg.algorithm == "BB_BEST") cost = branchAndBoundBEST(graph, initialUB);
             else if (cfg.algorithm == "TABU_SEARCH") cost = tabuSearch(graph, initialPath, lowerBound, cfg);
+            else if (cfg.algorithm == "ACO") cost = antColonyOptimization(graph, cfg);
             else {
                 cerr << "Nieznany algorytm w pliku konfiguracyjnym" << endl;
                 return 1;
