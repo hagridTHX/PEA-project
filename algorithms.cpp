@@ -857,19 +857,23 @@ int antColonyOptimization(const vector<vector<int>>& graph, const Config& cfg) {
     int n = graph.size();
     if (n <= 1) return 0;
 
-    // 1. Inicjalizacja początkowego poziomu feromonu (heurystyka oparta na Nearest Neighbour)
+    size_t nn = static_cast<size_t>(n) * n;
+
+    // 1. Inicjalizacja poziomu feromonu (heurystyka: tau0 = m / C_nn - zalecenie Dorigo)
     int nnCost = nearestNeighbour(graph, 0);
-    if (nnCost == 0 || nnCost == numeric_limits<int>::max()) nnCost = 10000;
-    double tau0 = 1.0 / (static_cast<double>(n) * nnCost);
+    if (nnCost <= 0 || nnCost == numeric_limits<int>::max()) nnCost = 10000;
+    double tau0 = static_cast<double>(cfg.acoAnts) / nnCost;
 
-    vector<vector<double>> pheromones(n, vector<double>(n, tau0));
-    vector<vector<double>> visibility(n, vector<double>(n, 0.0));
+    // Płaskie tablice 1D dla maksymalnego wykorzystania Cache procesora (Cache Locality)
+    vector<double> tau(nn, tau0);
+    vector<double> etaBeta(nn, 0.0);
+    vector<double> choice(nn, 0.0);
 
-    // Prekalkulacja widoczności (eta^beta), żeby nie liczyć funkcji pow() miliardy razy
+    // Prekalkulacja widoczności (eta^beta), żeby nie liczyć potęgi w głównej pętli
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
             if (i != j && graph[i][j] < numeric_limits<int>::max() && graph[i][j] > 0) {
-                visibility[i][j] = pow(1.0 / static_cast<double>(graph[i][j]), cfg.acoBeta);
+                etaBeta[i * n + j] = pow(1.0 / static_cast<double>(graph[i][j]), cfg.acoBeta);
             }
         }
     }
@@ -882,35 +886,39 @@ int antColonyOptimization(const vector<vector<int>>& graph, const Config& cfg) {
     uniform_real_distribution<> dis(0.0, 1.0);
     uniform_int_distribution<> startCityDis(0, n - 1);
 
+    bool alphaIsOne = (cfg.acoAlpha == 1.0);
+    bool alphaIsTwo = (cfg.acoAlpha == 2.0);
+
     for (int iter = 0; iter < cfg.acoIterations; ++iter) {
+        // 1. Prekalkulacja tablicy decyzyjnej raz na całą iterację (Zabójca funkcji pow!)
+        for (size_t idx = 0; idx < nn; ++idx) {
+            double t = tau[idx];
+            if (!alphaIsOne) {
+                if (alphaIsTwo) t = t * t;
+                else t = pow(t, cfg.acoAlpha);
+            }
+            choice[idx] = t * etaBeta[idx];
+        }
+
         vector<vector<int>> antPaths(cfg.acoAnts, vector<int>(n));
         vector<int> antCosts(cfg.acoAnts, 0);
 
-        int iterBestCost = numeric_limits<int>::max();
-        int iterBestAnt = -1;
-
-        // Faza 1: Mrówki budują ścieżki
+        // 2. Faza konstrukcji - mrówki budują ścieżki
         for (int k = 0; k < cfg.acoAnts; ++k) {
             vector<bool> visited(n, false);
             int startCity = startCityDis(gen);
             antPaths[k][0] = startCity;
             visited[startCity] = true;
             int currentCity = startCity;
-
+            int currentCost = 0;
             bool validAnt = true;
+
             for (int step = 1; step < n; ++step) {
-                vector<double> probs(n, 0.0);
+                const double* row = &choice[currentCity * n];
                 double sumProbs = 0.0;
 
                 for (int j = 0; j < n; ++j) {
-                    if (!visited[j] && graph[currentCity][j] < numeric_limits<int>::max()) {
-                        double tau = pheromones[currentCity][j];
-                        if (cfg.acoAlpha != 1.0) tau = pow(tau, cfg.acoAlpha);
-
-                        double p = tau * visibility[currentCity][j];
-                        probs[j] = p;
-                        sumProbs += p;
-                    }
+                    if (!visited[j]) sumProbs += row[j];
                 }
 
                 int nextCity = -1;
@@ -919,8 +927,8 @@ int antColonyOptimization(const vector<vector<int>>& graph, const Config& cfg) {
                     double r = dis(gen) * sumProbs;
                     double cumulative = 0.0;
                     for (int j = 0; j < n; ++j) {
-                        if (!visited[j] && probs[j] > 0.0) {
-                            cumulative += probs[j];
+                        if (!visited[j] && row[j] > 0.0) {
+                            cumulative += row[j];
                             if (cumulative >= r) {
                                 nextCity = j;
                                 break;
@@ -942,89 +950,44 @@ int antColonyOptimization(const vector<vector<int>>& graph, const Config& cfg) {
 
                 antPaths[k][step] = nextCity;
                 visited[nextCity] = true;
+                currentCost += graph[currentCity][nextCity];
                 currentCity = nextCity;
             }
 
-            if (validAnt) {
-                antCosts[k] = computePathCostInternal(graph, antPaths[k]);
-                if (antCosts[k] < iterBestCost && antCosts[k] != numeric_limits<int>::max()) {
-                    iterBestCost = antCosts[k];
-                    iterBestAnt = k;
+            // Dodanie powrotu do startu (zamknięcie cyklu)
+            if (validAnt && graph[currentCity][startCity] < numeric_limits<int>::max()) {
+                currentCost += graph[currentCity][startCity];
+                antCosts[k] = currentCost;
+
+                if (currentCost < globalBestCost) {
+                    globalBestCost = currentCost;
+                    globalBestPath = antPaths[k];
                 }
             } else {
                 antCosts[k] = numeric_limits<int>::max();
             }
         }
 
-        // Faza 2: Hybrydyzacja - aplikacja 2-OPT TYLKO dla najlepszej mrówki w iteracji
-        if (iterBestAnt != -1 && iterBestCost < numeric_limits<int>::max()) {
-            vector<int>& bestPath = antPaths[iterBestAnt];
-            bool improvement = true;
-            int passes = 0;
+        // 3. Parowanie feromonów (Evaporation)
+        for (size_t idx = 0; idx < nn; ++idx) {
+            tau[idx] *= (1.0 - cfg.acoRho);
+            if (tau[idx] < 1e-10) tau[idx] = 1e-10; // Zabezpieczenie przed wyzerowaniem
+        }
 
-            // Ograniczamy liczbę przebiegów 2-OPT, żeby zachować ekstremalną wydajność
-            while (improvement && passes < 1) {
-                improvement = false;
-                passes++;
-                vector<long long> fPref, rPref;
-                vector<int> fInv, rInv;
-                buildPrefixSums(graph, bestPath, fPref, fInv, rPref, rInv);
-
-                for (int i = 0; i < n - 1; ++i) {
-                    for (int j = i + 1; j < n; ++j) {
-                        long long delta = twoOptDelta(graph, bestPath, i, j, fPref, fInv, rPref, rInv);
-                        if (delta < 0 && delta != numeric_limits<int>::max()) {
-                            applyTwoOpt(bestPath, i, j);
-                            improvement = true;
-                            break; // Strategia "First Improvement"
-                        }
-                    }
-                    if (improvement) break;
+        // 4. Depozyt feromonów - CZYSTY CAS (Wszystkie mrówki zostawiają feromon proporcjonalny do jakości trasy)
+        for (int k = 0; k < cfg.acoAnts; ++k) {
+            if (antCosts[k] < numeric_limits<int>::max()) {
+                double deposit = 1.0 / static_cast<double>(antCosts[k]); // Q=1.0, deposit = Q / L
+                const vector<int>& p = antPaths[k];
+                for (int i = 0; i < n; ++i) {
+                    int u = p[i];
+                    int v = p[(i + 1) % n];
+                    tau[u * n + v] += deposit;
+                    if (cfg.symmetric) tau[v * n + u] += deposit; // Dla TSP symetrycznego wzmacniamy w obie strony
                 }
-            }
-
-            iterBestCost = computePathCostInternal(graph, bestPath);
-            antCosts[iterBestAnt] = iterBestCost;
-
-            if (iterBestCost < globalBestCost) {
-                globalBestCost = iterBestCost;
-                globalBestPath = bestPath;
-            }
-        }
-
-        // Faza 3: Parowanie feromonów
-        for (int i = 0; i < n; ++i) {
-            for (int j = 0; j < n; ++j) {
-                pheromones[i][j] *= (1.0 - cfg.acoRho);
-                if (pheromones[i][j] < 1e-10) pheromones[i][j] = 1e-10; // dolny limit, by ścieżki nigdy nie znikły w 100%
-            }
-        }
-
-        // Faza 4: Aktualizacja feromonów (Strategia Elitarna - tylko najlepsza trasa zostawia zapach)
-        if (iterBestAnt != -1 && iterBestCost < numeric_limits<int>::max()) {
-            double deposit = 1.0 / static_cast<double>(iterBestCost);
-            const vector<int>& p = antPaths[iterBestAnt];
-            for (int i = 0; i < n - 1; ++i) {
-                pheromones[p[i]][p[i+1]] += deposit;
-            }
-            if (graph[p[n-1]][p[0]] < numeric_limits<int>::max()) {
-                pheromones[p[n-1]][p[0]] += deposit;
-            }
-        }
-
-        // Ekstra premia dla Globalnie Najlepszej mrówki
-        if (globalBestCost < numeric_limits<int>::max()) {
-            double deposit = 2.0 / static_cast<double>(globalBestCost);
-            const vector<int>& p = globalBestPath;
-            for (int i = 0; i < n - 1; ++i) {
-                pheromones[p[i]][p[i+1]] += deposit;
-            }
-            if (graph[p[n-1]][p[0]] < numeric_limits<int>::max()) {
-                pheromones[p[n-1]][p[0]] += deposit;
             }
         }
     }
 
     return globalBestCost;
 }
-

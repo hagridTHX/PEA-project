@@ -31,7 +31,7 @@ int main() {
     }
 
     if (isNewFile) {
-        outFile << "Algorytm;Rozmiar;Repetycje;UB_Strategy;Sasiedztwo;TS_MaxIter;TS_Tenure;TS_Asp;Koszt;Optimum;Blad_wzgledny_%;Czas_us\n";
+        outFile << "Algorytm;Plik;Rozmiar;Repetycje;UB_Strategy;Sasiedztwo;TS_MaxIter;TS_Tenure;TS_Asp;ACO_Ants;ACO_Iter;ACO_Alpha;ACO_Beta;ACO_Rho;Koszt;Optimum;Blad_wzgledny_%;Czas_us\n";
     }
 
     cout << "Wybrany algorytm: " << cfg.algorithm << endl;
@@ -43,8 +43,15 @@ int main() {
         vector<vector<int>> graph;
         int knownOptimumFromFile = 0;
 
+        string filename = cfg.inputFile;
+        size_t pos = filename.find_last_of("/\\");
+        if (pos != string::npos) {
+            filename = filename.substr(pos + 1);
+        }
+
         if (cfg.generateRandom) {
             graph = generateRandomGraph(currentSize, cfg.symmetric, cfg.minWeight, cfg.maxWeight);
+            filename = "Losowy_Graf";
         } else {
             graph = loadGraphFromFile(cfg.inputFile, knownOptimumFromFile);
             currentSize = graph.size();
@@ -144,12 +151,25 @@ int main() {
             }
 
             bool isTS = (cfg.algorithm == "TABU_SEARCH");
-
             string tsMaxStr = isTS ? to_string(cfg.tsMaxIterations) : "-";
             string tsTenStr = isTS ? to_string(cfg.tsTenure) : "-";
             string tsAspStr = isTS ? (cfg.tsAspiration ? "1" : "0") : "-";
 
+            bool isACO = (cfg.algorithm == "ACO");
+            string acoAntsStr = isACO ? to_string(cfg.acoAnts) : "-";
+            string acoIterStr = isACO ? to_string(cfg.acoIterations) : "-";
+
+            ostringstream aStr, bStr, rStr;
+            aStr << fixed << setprecision(2) << cfg.acoAlpha;
+            bStr << fixed << setprecision(2) << cfg.acoBeta;
+            rStr << fixed << setprecision(2) << cfg.acoRho;
+
+            string acoAlphaStr = isACO ? aStr.str() : "-";
+            string acoBetaStr = isACO ? bStr.str() : "-";
+            string acoRhoStr = isACO ? rStr.str() : "-";
+
             outFile << cfg.algorithm << ";"
+                    << filename << ";"
                     << currentSize << ";"
                     << cfg.repetitions << ";"
                     << cfg.ubStrategy << ";"
@@ -157,6 +177,11 @@ int main() {
                     << tsMaxStr << ";"
                     << tsTenStr << ";"
                     << tsAspStr << ";"
+                    << acoAntsStr << ";"
+                    << acoIterStr << ";"
+                    << acoAlphaStr << ";"
+                    << acoBetaStr << ";"
+                    << acoRhoStr << ";"
                     << cost << ";"
                     << optStr << ";"
                     << errStr << ";"

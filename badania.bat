@@ -2,12 +2,37 @@
 setlocal enabledelayedexpansion
 
 REM =======================================================
+REM SLOWNIK: PLIKI TSPLIB DO PRZEBADANIA I ICH OPTIMA
+REM =======================================================
+
+set "FILES_TO_TEST=burma14.tsp br17.atsp eil51.tsp ftv47.atsp ch130.tsp kro124p.atsp pr1002.tsp pr2392.tsp"
+
+REM --- ZAKRES 1: n < 24 (Limit bledu: 0%) ---
+REM TSP: N=14, ATSP: N=17
+set "OPT[burma14.tsp]=3323"
+set "OPT[br17.atsp]=39"
+
+REM --- ZAKRES 2: 25 < n < 74 (Limit bledu: 50%) ---
+REM TSP: N=51, ATSP: N=48
+set "OPT[eil51.tsp]=426"
+set "OPT[ftv47.atsp]=1776"
+
+REM --- ZAKRES 3: 75 < n < 449 (Limit bledu: 100%) ---
+REM TSP: N=130, ATSP: N=100
+set "OPT[ch130.tsp]=6110"
+set "OPT[kro124p.atsp]=36230"
+
+REM --- ZAKRES 4: 450 < n < 2500 (Limit bledu: 150%) ---
+REM UWAGA: TSPLIB nie posiada grafow ATSP w tym rozmiarze! Badamy 2x TSP
+REM TSP 1: N=1002, TSP 2: N=2392
+set "OPT[pr1002.tsp]=259045"
+set "OPT[pr2392.tsp]=378032"
+
+
+REM =======================================================
 REM FLAGI STERUJACE (1 = wlacz, 0 = wylacz)
 REM =======================================================
-set "RUN_PHASE_1=0"
-set "RUN_PHASE_2=0"
-set "RUN_PHASE_3=0"
-set "RUN_PHASE_4=1"
+set "RUN_GRID_SEARCH=1"
 
 set "EXE=.\cmake-build-debug\PEA_project_1.exe"
 
@@ -24,199 +49,68 @@ if exist config.txt (
 )
 
 if not exist ".\results" mkdir ".\results"
-
-REM Nowy, zaktualizowany naglowek CSV
-set "CSV_HEADER=Algorytm;Rozmiar;Repetycje;UB_Strategy;Sasiedztwo;TS_MaxIter;TS_Tenure;TS_Asp;Koszt;Optimum;Blad_wzgledny_%%;Czas_us"
-
-set "DEF_TS_MAX=1000"
-set "DEF_TS_ASP=1"
-set "RAND_ITER=1000"
-
+REM === ZAKTUALIZOWANY NAGLOWEK CSV (Idealnie pasujacy do C++) ===
+set "CSV_HEADER=Algorytm;Plik;Rozmiar;Repetycje;UB_Strategy;Sasiedztwo;TS_MaxIter;TS_Tenure;TS_Asp;ACO_Ants;ACO_Iter;ACO_Alpha;ACO_Beta;ACO_Rho;Koszt;Optimum;Blad_wzgledny_%%;Czas_us"
 
 REM =======================================================
-REM FAZA 1: Tabu Search - Basic i wplyw UB/LB (INF vs RNN)
+REM FAZA BADAWCZA: STROJENIE PARAMETROW ACO
 REM =======================================================
-if "%RUN_PHASE_1%"=="1" (
+if "%RUN_GRID_SEARCH%"=="1" (
     echo =======================================================
-    echo FAZA 1: Tabu Search - Basic i wplyw UB/LB
-    echo =======================================================
-
-    for %%A in (TABU_SEARCH) do (
-        for %%P in (tsp atsp) do (
-            for %%U in (INF RNN) do (
-                set "OUT=.\results\ts_faza1_basic_%%P_UB_%%U.csv"
-                if not exist "!OUT!" (
-                    echo %CSV_HEADER%> "!OUT!"
-                )
-
-                set "SYM=0"
-                if %%P==tsp set "SYM=1"
-
-                for /L %%N in (5,1,12) do (
-                    set /a TENURE=%%N/2
-                    echo -^> %%A ^| %%P ^| N=%%N ^| UB=%%U ^| TENURE=!TENURE!
-
-                    for /L %%I in (1,1,20) do (
-                        set "IDX=0%%I"
-                        set "IDX=!IDX:~-2!"
-                        set "IN=.\data\%%P\matrix_%%Nx%%N_!IDX!.%%P"
-                        if exist "!IN!" (
-                            set "ALGO=%%A"
-                            set "UB=%%U"
-                            set "META=TWO_OPT"
-                            set "TS_MAX=%DEF_TS_MAX%"
-                            set "TS_TEN=!TENURE!"
-                            set "TS_ASP=%DEF_TS_ASP%"
-                            set "N_SIZE=%%N"
-                            call :RunWithConfig
-                        )
-                    )
-                )
-            )
-        )
-    )
-) else (
-    echo Pominieto Faze 1.
-)
-
-
-REM =======================================================
-REM FAZA 2: Tabu Search - Wplyw wyboru sasiedztwa
-REM =======================================================
-if "%RUN_PHASE_2%"=="1" (
-    echo =======================================================
-    echo FAZA 2: Tabu Search - Strojenie [Sasiedztwo]
+    echo FAZA 1: STROJENIE PARAMETROW ACO DLA WYBRANYCH PLIKOW TSPLIB
     echo =======================================================
 
-    for %%A in (TABU_SEARCH) do (
-        for %%P in (tsp atsp) do (
-            for %%M in (SWAP TWO_OPT) do (
-                set "OUT=.\results\ts_faza2_sasiedztwo_%%P_%%M.csv"
-                if not exist "!OUT!" (
-                    echo %CSV_HEADER%> "!OUT!"
-                )
+    for %%F in (%FILES_TO_TEST%) do (
+        set "FILENAME=%%F"
+        set "EXPECTED_OPT=!OPT[%%F]!"
 
-                set "SYM=0"
-                if %%P==tsp set "SYM=1"
+        REM Automatyczne wykrywanie czy to TSP czy ATSP (po rozszerzeniu)
+        set "SYM=0"
+        echo !FILENAME! | findstr /i "\.tsp$" >nul
+        if not errorlevel 1 set "SYM=1"
 
-                echo -^> %%A ^| %%P ^| N=12 ^| SASIEDZTWO=%%M
+        set "P_DIR=atsp"
+        if "!SYM!"=="1" set "P_DIR=tsp"
 
-                for /L %%I in (1,1,5) do (
-                    set "IDX=0%%I"
-                    set "IDX=!IDX:~-2!"
-                    set "IN=.\data\%%P\matrix_12x12_!IDX!.%%P"
-                    if exist "!IN!" (
-                        set "ALGO=%%A"
-                        set "UB=RNN"
-                        set "META=%%M"
-                        set "TS_MAX=%DEF_TS_MAX%"
-                        set "TS_TEN=6"
-                        set "TS_ASP=%DEF_TS_ASP%"
-                        set "N_SIZE=12"
-                        call :RunWithConfig
-                    )
-                )
-            )
-        )
-    )
-) else (
-    echo Pominieto Faze 2.
-)
+        set "IN=.\tsplib\!P_DIR!\!FILENAME!"
 
+        if exist "!IN!" (
+            REM Wyciaganie liczby (N) z nazwy pliku
+            for /f %%S in ('powershell -NoProfile -Command "if ('!FILENAME!' -match '\d+') { $matches[0] } else { '50' }"') do set "N_REAL=%%S"
 
-REM =======================================================
-REM FAZA 3: Tabu Search - Wplyw kadencji i Aspiracji
-REM =======================================================
-if "%RUN_PHASE_3%"=="1" (
-    echo =======================================================
-    echo FAZA 3: Tabu Search - Strojenie [Kadencja i Aspiracja]
-    echo =======================================================
-
-    for %%A in (TABU_SEARCH) do (
-        for %%P in (tsp atsp) do (
-            REM Testujemy rozne kadencje dla N=12: 3, 6 (N/2), 10 (stala), 12 (N)
-            for %%T in (3 6 10 12) do (
-                for %%S in (0 1) do (
-                    set "OUT=.\results\ts_faza3_params_%%P_Tenure_%%T_Asp_%%S.csv"
-                    if not exist "!OUT!" (
-                        echo %CSV_HEADER%> "!OUT!"
-                    )
-
-                    set "SYM=0"
-                    if %%P==tsp set "SYM=1"
-
-                    echo -^> %%A ^| %%P ^| N=12 ^| TENURE=%%T ^| ASP=%%S
-
-                    for /L %%I in (1,1,5) do (
-                        set "IDX=0%%I"
-                        set "IDX=!IDX:~-2!"
-                        set "IN=.\data\%%P\matrix_12x12_!IDX!.%%P"
-                        if exist "!IN!" (
-                            set "ALGO=%%A"
-                            set "UB=RNN"
-                            set "META=TWO_OPT"
-                            set "TS_MAX=%DEF_TS_MAX%"
-                            set "TS_TEN=%%T"
-                            set "TS_ASP=%%S"
-                            set "N_SIZE=12"
-                            call :RunWithConfig
-                        )
-                    )
-                )
-            )
-        )
-    )
-) else (
-    echo Pominieto Faze 3.
-)
-
-REM =======================================================
-REM FAZA 4: TSPLIB - max size challenge
-REM =======================================================
-if "%RUN_PHASE_4%"=="1" (
-    echo =======================================================
-    echo FAZA 4: TSPLIB - [Weryfikacja maksymalnych instancji]
-    echo =======================================================
-
-    for %%A in (TABU_SEARCH) do (
-        for %%P in (tsp atsp) do (
-            set "OUT=.\results\ts_faza4_tsplib_%%P.csv"
+            REM =======================================================
+            REM USTAWIENIE WYJSCIA: 1 PLIK CSV NA 1 MACIERZ TSPLIB
+            REM =======================================================
+            set "OUT=.\results\ACO_!FILENAME!.csv"
             if not exist "!OUT!" (
                 echo %CSV_HEADER%> "!OUT!"
             )
 
-            set "SYM=0"
-            if %%P==tsp set "SYM=1"
+            REM PETLE Z PARAMETRAMI DO PRZETESTOWANIA
+            for %%A in (1.0 2.0) do (
+                for %%B in (2.0 4.0) do (
+                    for %%R in (0.3 0.6) do (
 
-            for %%F in (.\tsplib\%%P\*.*) do (
-                set "IN=%%F"
-                set "FILENAME=%%~nxF"
-                set "BASENAME=%%~nF"
+                        REM --- LOGIKA DOBORU MROWEK I ITERACJI ZALEZNA OD N ---
+                        set "ACO_ANTS=!N_REAL!"
+                        if !ACO_ANTS! gtr 50 set "ACO_ANTS=50"
 
-                REM Wyciagniecie liczby z nazwy pliku (np. eil51 -> 51)
-                for /f %%S in ('powershell -NoProfile -Command "if ('!BASENAME!' -match '\d+') { $matches[0] } else { '50' }"') do set "N_REAL=%%S"
-                REM Jesli plik nie ma liczby w nazwie (zabezpieczenie), ustawiamy N=50
-                if "!N_REAL!"=="" set "N_REAL=50"
+                        set "ACO_ITER=100"
+                        if !N_REAL! lss 100 set "ACO_ITER=200"
 
-                REM Dynamiczne obliczanie parametrow (Kadencja = N/2, Iteracje = N * 100)
-                set /a TS_TEN=N_REAL / 2
-                set /a TS_MAX=N_REAL * 100
-
-                echo -^> %%A ^| %%P ^| TSPLIB: !FILENAME! ^| N=!N_REAL! ^| MAX_ITER=!TS_MAX! ^| TENURE=!TS_TEN!
-
-                if exist "!IN!" (
-                    set "ALGO=%%A"
-                    set "UB=RNN"
-                    set "META=TWO_OPT"
-                    set "TS_ASP=1"
-                    set "N_SIZE=0"
-                    call :RunWithConfig
+                        echo -^> ACO ^| !FILENAME! (N=!N_REAL!) ^| Alpha=%%A ^| Beta=%%B ^| Rho=%%R ^| Ants=!ACO_ANTS! ^| Iter=!ACO_ITER!
+                        set "ALGO=ACO"
+                        set "ACO_A=%%A"
+                        set "ACO_B=%%B"
+                        set "ACO_R=%%R"
+                        call :RunWithConfig
+                    )
                 )
             )
+        ) else (
+            echo [!] Nie znaleziono pliku: !IN!
         )
     )
-) else (
-    echo Pominieto Faze 4.
 )
 
 REM === PRZYWRACANIE CONFIGU ===
@@ -239,28 +133,30 @@ for /f %%L in ('powershell -NoProfile -Command "(Get-Content -Path ''!OUT!'' -Er
 
 (
     echo algorithm         = !ALGO!
-    echo repetitions       = 1
-    echo randIterations    = %RAND_ITER%
-    echo ubStrategy        = !UB!
-    echo metaNeighborhood  = !META!
-    echo tsMaxIterations   = !TS_MAX!
-    echo tsTenure          = !TS_TEN!
-    echo tsAspiration      = !TS_ASP!
+    echo repetitions       = 10
+    echo randIterations    = 1000
+    echo ubStrategy        = INF
+    echo metaNeighborhood  = TWO_OPT
+    echo acoAnts           = !ACO_ANTS!
+    echo acoIterations     = !ACO_ITER!
+    echo acoAlpha          = !ACO_A!
+    echo acoBeta           = !ACO_B!
+    echo acoRho            = !ACO_R!
     echo generateRandom    = 0
     echo symmetric         = !SYM!
     echo inputFile         = !IN!
     echo outputFile        = !OUT!
-    echo startInstanceSize = !N_SIZE!
+    echo startInstanceSize = 0
     echo instancesCount    = 1
     echo showProgress      = 0
     echo minWeight         = 1
     echo maxWeight         = 100
 ) > config.txt
 
-REM Uruchomienie programu glownego z limitem 15 minut
+REM Uruchomienie z bezwzglednym limitem 15 minut
 powershell -NoProfile -Command "$p = Start-Process -FilePath '%EXE%' -WindowStyle Hidden -PassThru; $p | Wait-Process -Timeout 915 -ErrorAction SilentlyContinue; if (-not $p.HasExited) { $p | Stop-Process -Force; Write-Host '      [!] Zabito proces: Przekroczono limit 15 minut.' }"
 
-REM Dynamiczny CSV Cleaner (Sprawdza indeks nr 10 = Blad_wzgledny_%)
-powershell -NoProfile -Command "$out='!OUT!'; $prev=[int]'!PREV_LINES!'; if (Test-Path $out) { $lines = Get-Content -Path $out; if ($lines.Count -gt $prev) { $last = $lines[-1]; $cols = $last -split ';'; if ($cols.Length -ge 12) { $raw = $cols[10].Trim(); if ($raw -match '^[Bb]rak$') { $lines = $lines[0..($lines.Count-2)]; Set-Content -Path $out -Value $lines; Write-Host '      [!] Odrzucono wynik (Blad > 15%): Brak' } else { $val = [double]($raw -replace ',', '.'); if ($val -gt 15.0) { $lines = $lines[0..($lines.Count-2)]; Set-Content -Path $out -Value $lines; Write-Host \"      [!] Odrzucono wynik (Blad > 15%): $val\" } else { Write-Host \"      [OK] Zapisano wynik (Blad <= 15%): $val\" } } } } }"
+REM === ZAKTUALIZOWANY FILTR POWERSHELL (Indeksy 16 dla kolumny bledu wzglednego) ===
+powershell -NoProfile -Command "$out='!OUT!'; $prev=[int]'!PREV_LINES!'; $n_real=[int]'!N_REAL!'; $max_err = 150.0; if ($n_real -lt 24) { $max_err = 0.0 } elseif ($n_real -le 74) { $max_err = 50.0 } elseif ($n_real -le 449) { $max_err = 100.0 }; if (Test-Path $out) { $lines = Get-Content -Path $out; if ($lines.Count -gt $prev) { $new_lines = $lines[$prev..($lines.Count-1)]; $sum = 0.0; $cnt = 0; $brak = $false; foreach ($l in $new_lines) { $cols = $l -split ';'; if ($cols.Length -ge 17) { $raw = $cols[16].Trim(); if ($raw -match '^[Bb]rak$') { $brak = $true } else { $val = [double]($raw -replace ',', '.'); $sum += $val; $cnt++ } } } if ($brak) { $lines = $lines[0..($prev-1)]; Set-Content -Path $out -Value $lines; Write-Host '      [!] Odrzucono wyniki: Brak optimum' } elseif ($cnt -gt 0) { $avg = [math]::Round($sum / $cnt, 2); if ($avg -gt $max_err) { $lines = $lines[0..($prev-1)]; Set-Content -Path $out -Value $lines; Write-Host \"      [!] Odrzucono parametry: Sredni blad $avg% przekracza prog $max_err% dla N=$n_real\"; } else { Write-Host \"      [OK] Sukces! Sredni blad $avg% (Prog: $max_err%)\" } } } }"
 
 exit /b 0
