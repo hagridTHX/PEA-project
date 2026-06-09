@@ -21,3 +21,6 @@ out/
 # Różne pliki tymczasowe
 *.log
 .DS_Store
+
+tsplib
+results
