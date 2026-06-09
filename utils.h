@@ -32,6 +32,7 @@ struct Config {
     double acoAlpha = 1.0;
     double acoBeta = 2.0;
     double acoRho = 0.5;
+    int knownOptimum = 0;
 };
 
 std::string trim(const std::string& str);

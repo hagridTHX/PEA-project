@@ -54,6 +54,7 @@ Config loadConfig(const string& filename) {
             else if (key == "acoAlpha") cfg.acoAlpha = stod(value);
             else if (key == "acoBeta") cfg.acoBeta = stod(value);
             else if (key == "acoRho") cfg.acoRho = stod(value);
+            else if (key == "knownOptimum") cfg.knownOptimum = stoi(value);
         }
     }
     file.close();

@@ -60,7 +60,7 @@ int main() {
         cout << "\n" << endl;
         cout << "Rozmiar instancji: " << currentSize << " x " << currentSize << endl;
 
-        int dynamicOptimum = knownOptimumFromFile;
+        int dynamicOptimum = (cfg.knownOptimum > 0) ? cfg.knownOptimum : knownOptimumFromFile;
 
         if (cfg.algorithm == "BF") {
             cout << "Testujemy BF, wiec jego wynik bedzie automatycznie optimum." << endl;
